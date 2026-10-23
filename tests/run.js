@@ -44,10 +44,12 @@ const RULES = [
   ["quiet-hours", "Scheduled sends between 8 AM and 9 PM"],
   ["money-per-day", "Max 1 payment message per day"],
   ["has-reason", "Every row has a reason"],
+  ["no-door-repeat", "Never the same door (feature nudge) on consecutive days"],
+  ["zero-leads-doors", "Zero-lead realtors get messages on every active day, and doors beyond the CRM"],
   ["copy-lint", "Copy: length limits, max 1 emoji, max 1 '!', single CTA, WhatsApp objection format"],
 ];
 out.rules = RULES.map(([id, name]) => ({ id, name }));
-const lastSeen = {}; const cum = {};
+const lastSeen = {}; const cum = {}; const lastDoorOf = {}; const zeroDoors = {};
 // seed history from before the log started, so cumulative rules see each realtor's full past
 for (const u of R.ROSTER) {
   const pre = R.dayIdx(u.start, R.LOG_START) - 1; if (pre < 1) continue;
@@ -90,6 +92,15 @@ for (const date of dates) {
       if (lastSeen[k] !== undefined && (t - lastSeen[k]) / 864e5 < REPEAT_N) fail["no-repeat"].push(r);
       lastSeen[k] = t;
     }
+  }
+  for (const r of sent.filter((x) => x.id === "PROMO")) { const prev = lastDoorOf[r.user]; const t = Date.parse(date); if (prev && prev.door === r.feature && (t - prev.t) / 864e5 === 1) fail["no-door-repeat"].push({ ...r, note: "same door as yesterday: " + r.feature }); lastDoorOf[r.user] = { door: r.feature, t }; }
+  for (const u of R.ROSTER.filter((x) => /Zero leads/.test(x.persona))) {
+    const d = R.dayIdx(u.start, date); if (d < 2) continue; const b = E.PERSONAS[u.persona](d);
+    const got = sent.filter((r) => r.user === u.id);
+    if (b.opened && !got.length) fail["zero-leads-doors"].push({ user: u.id, name: u.name, day: d, ch: "-", time: "-", id: "-", title: "no message on an active day" });
+    const z = (zeroDoors[u.id] = zeroDoors[u.id] || new Set()); got.filter((r) => r.id === "PROMO").forEach((r) => z.add(r.feature));
+    if (d >= 8 && ![...z].some((f) => f !== "DealFlow CRM")) fail["zero-leads-doors"].push({ user: u.id, name: u.name, day: d, ch: "-", time: "-", id: "-", title: "only CRM doors offered" });
+    if (got.some((r) => r.id === "OFFER" && /one lead is moving/i.test(r.title))) fail["zero-leads-doors"].push({ user: u.id, name: u.name, day: d, ch: "Email", time: "", id: "OFFER", title: "lead-progress offer sent to zero-lead user" });
   }
   for (const r of rows) { if (!r.why || !r.why.trim()) fail["has-reason"].push(r); const le = lint(r); if (le.length) fail["copy-lint"].push({ ...r, note: le.join("; ") }); }
   const res = RULES.map(([id]) => ({ id, pass: fail[id].length === 0, failures: fail[id].length, rows: fail[id].slice(0, 20).map((r) => ({ user: r.user, name: r.name, day: r.day, ch: r.ch, time: r.time, id: r.id, title: r.title, note: r.note || "" })) }));

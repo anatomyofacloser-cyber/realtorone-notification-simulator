@@ -3,7 +3,7 @@ const FEATS = [
   { key: "crm", name: "DealFlow CRM", promo: [["Marina viewing, then silence?", "Silence isn't a no. Find who went quiet and what to send.", "Open CRM"], ["Where do your deals leak?", "One screen shows the stage that loses you clients.", "Find my leak"]] },
   { key: "scripts", name: "Scripts", promo: [["\"Let me think\" again? Say this", "The exact reply that keeps the deal warm. Tap to copy.", "Copy line"], ["Blue ticks, no reply?", "A 2-line WhatsApp that doesn't read like a template.", "Copy nudge"]] },
   { key: "market", name: "Market (DealRadar)", promo: [["Slow morning? Steal this opener", "Dubai today: {headline}. Lead your first call with it.", "Use opener"], ["One real JVC sale. One reason to call", "Send a fresh DLD sale to a client in one tap.", "Pitch client"]] },
-  { key: "mission", name: "Daily Mission", promo: [["Today's mission: 3 call-backs", "10 minutes. Moves Khalid one step closer to keys.", "Start mission"], ["Half the day left. 10 minutes needed", "Finish today's mission before the 4 PM call rush.", "Finish it"]] },
+  { key: "mission", name: "Daily Mission", promo: [["Today's mission: 3 call-backs", "10 minutes. Moves one deal a step closer to keys.", "Start mission"], ["Half the day left. 10 minutes needed", "Finish today's mission before the 4 PM call rush.", "Finish it"]] },
   { key: "courses", name: "Courses", promo: [["10 no's in a row? Watch this first", "2 minutes on keeping your voice steady before you dial.", "Play lesson"], ["You stopped right before the good part", "Next up: the exact words. 3 minutes left.", "Resume"]] },
   { key: "ebooks", name: "E-books", promo: [["For every client who said \"later\"", "The Follow-up Fortune. A 12-minute read, free for you.", "Read free"], ["Thin pipeline this month?", "War Time: the plan for slow weeks in Dubai.", "Read now"]] },
   { key: "labs", name: "Live Labs", promo: [["Bring your toughest client tonight", "Live Lab: {lab_title}. We fix the call live.", "Save seat"], ["Missed the Lab? Watch the 8 minutes", "The call-back part is worth your coffee break.", "Watch clip"]] },
@@ -40,6 +40,26 @@ const COACH = {
   "Client Meeting": "Ask 3 questions before showing anything. Max 3 units.",
   "Negotiation": "He said \"too expensive\". Pause, ask what he's comparing to.",
   "Closure": "Confirm mortgage, send the MOU today, book the transfer date.",
+};
+const DOORS = ["coach", "crm", "scripts", "courses", "ebooks", "labs", "market", "mission", "deal", "ai", "brand"];
+const ADJ = { crm: ["scripts", "coach", "deal"], courses: ["scripts", "ebooks", "labs"], ebooks: ["courses", "labs", "coach"], labs: ["courses", "scripts", "ebooks"], coach: ["mission", "scripts", "crm"], scripts: ["ai", "courses", "crm"], market: ["deal", "crm", "coach"], mission: ["coach", "scripts", "courses"], deal: ["scripts", "market", "crm"], ai: ["scripts", "brand", "ebooks"], brand: ["ai", "market", "labs"] };
+const DEEP = {
+  coach: [["Plan done. Try the 2-minute drill", "Say today's opener out loud before the first call.", "Start drill"], ["Your coach noticed a pattern", "See which stage you skip most, and the 1-minute fix.", "See pattern"], ["Friday plan: lighter, smarter", "Two calls that matter most this week. Nothing else.", "Open plan"]],
+  crm: [["Set next-contact dates in 1 minute", "Every lead with a date never goes quiet on you.", "Set dates"], ["Tag your hottest 3 leads", "Hot tags jump to the top of tomorrow's plan.", "Tag leads"], ["See your net commission so far", "One screen: what's in the pipeline, in AED.", "View pipeline"]],
+  scripts: [["Pin the lines that worked", "Save your favourite scripts and reuse them in one tap.", "Pin scripts"], ["New script: the viewing no-show", "What to send when they skip the Marina viewing.", "Copy script"], ["Practise one script out loud", "60 seconds, phone down. Your voice will thank you.", "Practise"]],
+  market: [["Get pinged when JVC sells", "Set one DealRadar alert for your area.", "Set alert"], ["Guess today's price, beat the room", "One Dubai comps question. 60 seconds.", "Play"], ["Three sales your buyers will ask about", "This week's top DLD deals in your areas.", "See deals"]],
+  mission: [["Mission done. Try a harder one", "Tomorrow: 5 call-backs instead of 3.", "Pick mission"], ["Mission streak: keep it rolling", "Today's mission takes 10 minutes. Same time as coffee.", "Start"], ["Pick your own mission today", "Choose the one task that moves a deal.", "Choose"]],
+  courses: [["Next lesson: the exact words", "Lesson 2 starts where you stopped. 4 minutes.", "Play lesson"], ["Workbook for the lesson you watched", "One page turns the lesson into tomorrow's call.", "Open workbook"], ["The 9-minute module on influence", "How top agents steer a viewing without pushing.", "Play module"]],
+  ebooks: [["Finished the chapter? Try the workbook", "One page, 5 minutes, ready for your next call.", "Open workbook"], ["Next read: High-Ticket Sales Blueprint", "For when the client is looking at Palm villas.", "Read now"], ["One page from War Time, today", "The slow-week plan, in two minutes.", "Read page"]],
+  labs: [["Next Live Lab: {lab_title}", "Bring one real client situation. We fix it live.", "Save seat"], ["Lab replay: the call-back part", "8 minutes, timestamped. Watch with coffee.", "Watch clip"], ["Send your question before the Lab", "We answer the best ones live on Thursday.", "Ask now"]],
+  deal: [["Run Khalid through the checklist", "6 things to confirm before transfer day.", "Open checklist"], ["Counter-offer coming? Prep in 2 minutes", "Three lines that hold your price politely.", "Prep now"], ["Log the offer before you reply", "Deal Room shows your best next move.", "Log offer"]],
+  ai: [["Teach Reven your voice", "Save 3 replies you liked. Drafts sound more like you.", "Save replies"], ["Let Reven draft your 6 PM follow-ups", "Pick three clients. Get three replies in your voice.", "Draft now"], ["Ask Reven: what do I say next?", "Paste the last chat. Get one clear next line.", "Ask Reven"]],
+  brand: [["Your post is live. Who saw it?", "See who viewed and who to message tonight.", "See reach"], ["Next post idea: your Marina sunset", "We drafted the caption. You add the photo.", "Review draft"], ["Plan the month's posts in 2 minutes", "Pick themes, we draft. You approve.", "Plan posts"]],
+};
+const LEADNUDGE = {
+  zero: [["Add one lead in 20 seconds", "Copy the last caller from WhatsApp. Name and number, done.", "Add lead"], ["That 6 PM caller? Make them lead #1", "Save them now. Tomorrow's plan starts with them.", "Add lead"], ["Your Marina viewing needs a follow-up", "Add the client. We remind you with the right words.", "Add lead"], ["Empty CRM, busy WhatsApp?", "Move your warmest chat into the CRM. 20 seconds.", "Add lead"]],
+  one: [["One lead is a start. Add a second?", "Your next call-back deserves a reminder too.", "Add lead"], ["Who else said \"call me later\"?", "Add them now. 20 seconds, then forget about it.", "Add lead"]],
+  stale: [["Khalid hasn't moved in 5 days", "Update his stage in 10 seconds so the plan stays sharp.", "Update lead"], ["Your pipeline is frozen at Follow-up", "Tap each lead's latest status. One minute total.", "Update leads"]],
 };
 const COPY = {
   "ACC-01|Push": { t: "Viewing done. Client gone quiet?", b: "Get tomorrow's exact follow-up line. Sign up in 30 seconds." },
@@ -131,7 +151,9 @@ function payStatus(pay, rel, inactive) {
 function simulate(days, beh, opt) {
   const msgs = [];
   let activated = false, firstOpen = 0, inactive = 0, streak = 0, activeDays = 0, angle = 0, valueSent = 0, offersSent = 0, lastOffer = -99, obj = 0, val = 0, lastPromo = "", leadAdded = false, unopenedLadder = 0;
-  const tried = new Set(), ignored = {};
+  const tried = new Set(), ignored = {}, usage = {};
+  const recent = {};
+  let leads = 0, lastLeadUpdate = 0, lastLeadNudge = -99, leadNudges = 0, lastDoor = "", lastDoorDay = -9, usedYesterday = new Set();
   let acts = new Set(), chans = new Set(), sent = 0, holiday = false, closed = false, courseUses = 0, refDay = -1, status = "Not paid";
   const add = (day, time0, ch, id, title, body, why, kind) => {
     const ov = COPY[id + "|" + ch]; if (ov) { if (ov.t) title = typeof ov.t === "function" ? ov.t(streak) : ov.t; if (ov.b) body = ov.b; }
@@ -195,8 +217,8 @@ function simulate(days, beh, opt) {
       if (opt.pay !== "Not paid (free)" && !opt.pay.startsWith("Trial") && !(opt.shift > 0)) add(d, "On pay", "In-app", "PAY-06", "All your leads are unlocked", "Import your CRM list. Tomorrow's plan covers all of them.", "Paid on day one.", "Milestone");
     } else {
       if (inactive === 0 || inactive === 1) {
-        if (leadAdded) add(d, "8:00 AM", "Push", "MC-01", "Today: call Khalid first", COACH[b.stage === "None" ? "Follow-up" : b.stage] || COACH["Follow-up"], "Daily Morning Coach, only once a lead exists.", "Daily");
-        else add(d, "8:00 AM", "Push", "OLC-03", "Who's the client you keep delaying?", "Add their name. That's it. We do the rest at 8 AM.", "Active but no lead yet: ask for the one name instead of a plan.", "Daily");
+        if (leadAdded || leads > 0) add(d, "8:00 AM", "Push", "MC-01", "Today: call Khalid first", COACH[b.stage === "None" ? "Follow-up" : b.stage] || COACH["Follow-up"], "Daily Morning Coach, only once a lead exists.", "Daily");
+        else if (false) add(d, "8:00 AM", "Push", "OLC-03", "Who's the client you keep delaying?", "Add their name. That's it. We do the rest at 8 AM.", "Active but no lead yet: ask for the one name instead of a plan.", "Daily");
       }
       if (inactive === 3) add(d, "10:00 AM", "Push", "SLP-03", "Khalid hasn't heard from you", "One message today keeps him warm. It's written.", "3 days inactive: their own lead, not a generic 'we miss you'.", "Slipping");
       if (inactive === 7) { add(d, "10:00 AM", "Push", "SLP-07", "A week of silence, Guru", "Your leads go to the agent who calls back. 1 call today.", "7 days inactive.", "Slipping"); add(d, "6:00 PM", "Email", "SLP-07", "A week of silence, Guru", "Hi Guru,\n\nKhalid was at Follow-up when you last checked. A short call today is usually enough to restart." + SIG, "Email version of the same D7 re-entry.", "Slipping"); }
@@ -204,37 +226,64 @@ function simulate(days, beh, opt) {
       if (inactive === 30) add(d, "10:00 AM", "Email", "SLP-30", "Your history is saved", "Hi Guru,\n\nMonth-end coming? Start with one call. Everything is where you left it.\n\nRealtorOne", "30 days inactive: monthly only after this.", "Slipping");
       if (b.opened && inactive >= 3) add(d, "On open", "In-app", "WB-02", "Welcome back, Guru", "Pick up where you left off: today's first call is Khalid.", "Returned after slipping.", "Welcome back");
       if (inactive < 3) {
-        if (lastPromo && !tried.has(lastPromo)) ignored[lastPromo] = (ignored[lastPromo] || 0) + 1;
-        const pick = FEATS.filter((f) => !tried.has(f.key) && f.key !== lastPromo && (ignored[f.key] || 0) < 2)[0];
-        if (pick) {
-          const v = pick.promo[Math.min(1, ignored[pick.key] || 0)];
-          const ag = ANGLES[angle % ANGLES.length]; angle++;
-          const prev = FEATS.find((f) => f.key === lastPromo);
-          add(d, b.opened ? "On open" : "11:00 AM", b.opened ? "In-app" : "Push", "PROMO", v[0], b.opened ? v[1] + " → " + v[2] : v[1], lastPromo ? `${prev ? prev.name : lastPromo} not used yesterday, so today: different feature (${pick.name}), angle: ${ag}.` : `First untried feature: ${pick.name}, angle: ${ag}.`, "Feature nudge");
-          lastPromo = pick.key;
+        // any-door engine: pick the door the realtor is most likely to open today
+        if (lastDoor && lastDoorDay === d - 1 && !usedYesterday.has(lastDoor)) ignored[lastDoor] = (ignored[lastDoor] || 0) + 1;
+        const leadState = leads === 0 ? "zero" : leads === 1 && d - firstOpen >= 5 ? "one" : d - lastLeadUpdate >= 5 ? "stale" : "";
+        const leadDue = leadState && lastDoor !== "crm" && d - lastLeadNudge >= (leadState === "zero" ? 3 : 4);
+        let door = "", v = null, why = "";
+        if (leadDue) {
+          const pool = LEADNUDGE[leadState]; v = pool.map((x, i) => pool[(leadNudges + i) % pool.length]).find((x) => !(recent[x[0]] > d - 7)) || null; leadNudges++; lastLeadNudge = d; door = "crm";
+          why = `Door: DealFlow CRM. Lead condition "${leadState === "zero" ? "zero leads" : leadState === "one" ? "only 1 lead" : "leads not updated 5+ days"}", fresh angle #${leadNudges}.`;
+        } else {
+          const usedDoors = DOORS.filter((k) => (usage[k] || 0) > 0);
+          const adj = []; for (const k of usedDoors) for (const a of ADJ[k]) if (!usage[a] && !adj.includes(a)) adj.push(a);
+          const fresh = DOORS.filter((k) => !usage[k] && !adj.includes(k));
+          const rot = inactive > 0 || !usedDoors.length ? DOORS.slice(d % DOORS.length).concat(DOORS.slice(0, d % DOORS.length)) : [];
+          const order = [...adj, ...(rot.length ? rot : fresh), ...usedDoors];
+          const labDay = [3, 4].includes((d - firstOpen) % 7);
+          const ok = (k) => !(k === "labs" && labDay) && k !== lastDoor && (ignored[k] || 0) < 2 && !((k === "crm" || k === "deal") && leads === 0);
+          const copyFor = (k) => { const f = FEATS.find((x) => x.key === k); const opts = usage[k] ? DEEP[k].map((x, i) => DEEP[k][(usage[k] + i) % DEEP[k].length]) : [f.promo[Math.min(1, ignored[k] || 0)], f.promo[1 - Math.min(1, ignored[k] || 0)]]; return opts.find((x) => !(recent[x[0]] > d - 7)); };
+          door = order.find((k) => ok(k) && copyFor(k)) || DOORS.find((k) => !(k === "labs" && labDay) && k !== lastDoor && !((k === "crm" || k === "deal") && leads === 0) && copyFor(k)) || "";
+          const f = FEATS.find((x) => x.key === door);
+          if (!door) { v = null; }
+          else if (usage[door]) { v = copyFor(door); why = `Door: ${f.name}. Used before, so go one step deeper.`; }
+          else { v = copyFor(door); why = `Door: ${f.name}. ${adj.includes(door) ? "Next to a feature they already use." : rot.length ? "Rotating doors while quiet." : "Not tried yet."}${lastDoor ? " Yesterday's door was different." : ""}`; }
+        }
+        if (v && recent[v[0]] > d - 7) v = null;
+        if (v) {
+        const ag = ANGLES[angle % ANGLES.length]; angle++;
+        const inApp = b.opened && leads > 0;
+        add(d, inApp ? "On open" : leads === 0 ? "8:00 AM" : "11:00 AM", inApp ? "In-app" : "Push", "PROMO", v[0], inApp ? v[1] + " → " + v[2] : v[1], why + ` Angle: ${ag}.`, "Feature nudge");
+        if (msgs[msgs.length - 1].sup === undefined) recent[v[0]] = d;
+        lastDoor = door; lastDoorDay = d;
         }
       }
       if (!b.opened && inactive < 2) add(d, "12:30 PM", "Push", "MC-02", "Your first call is still waiting", "Khalid is warmest before 2 PM. Your line is ready.", "Plan not opened by 12:30.", "Daily");
     }
     if (b.opened) {
-      if (b.used !== "none") tried.add(b.used);
-      if (b.used === "crm" || b.stage !== "None") { if (!leadAdded) add(d, "On add", "In-app", "OLC-05", "Got it. Khalid is tracked", "Tomorrow 8 AM: your opening line, 3 steps, and one thing not to say.", "First lead added.", "Milestone"); leadAdded = true; }
+      usedYesterday = new Set();
+      if (b.used !== "none") { tried.add(b.used); usage[b.used] = (usage[b.used] || 0) + 1; usedYesterday.add(b.used); }
+      if (b.used === "crm") { leads = Math.max(1, leads + (b.addLeads === undefined ? 1 : b.addLeads)); lastLeadUpdate = d; }
+      else if (b.stage !== "None" && leads === 0) { leads = 1; lastLeadUpdate = d; }
+      if (leads > 0) { if (!leadAdded) add(d, "On add", "In-app", "OLC-05", "Got it. Khalid is tracked", "Tomorrow 8 AM: your opening line, 3 steps, and one thing not to say.", "First lead added.", "Milestone"); leadAdded = true; }
       activeDays++; inactive = 0;
       if (b.calls > 0) { streak++; if ([3, 7, 14, 30].includes(streak)) add(d, "On log", "In-app", "HAB-05", `${streak} days of calls in a row`, "Streak counts calls you logged, not app opens. Keep going.", "Streak milestone.", "Milestone"); }
-      else { if (streak >= 3) add(d, "7:00 PM", "Push", "HAB-03", `Protect your ${streak}-day streak`, "One call logged keeps it. Even a 2-minute one.", "Opened but no calls logged; streak at risk.", "Daily"); else add(d, "6:00 PM", "Push", "MC-03", "How did today's calls go?", "Tap the result. 5 seconds. Tomorrow's plan gets sharper.", "No calls logged by 6 PM.", "Daily"); streak = 0; }
-    } else if (activated) { inactive++; streak = 0; }
+      else { if (streak >= 3) add(d, "7:00 PM", "Push", "HAB-03", `Protect your ${streak}-day streak`, "One call logged keeps it. Even a 2-minute one.", "Opened but no calls logged; streak at risk.", "Daily"); else if (leads > 0) add(d, "6:00 PM", "Push", "MC-03", "How did today's calls go?", "Tap the result. 5 seconds. Tomorrow's plan gets sharper.", "No calls logged by 6 PM.", "Daily"); streak = 0; }
+    } else if (activated) { inactive++; streak = 0; usedYesterday = new Set(); }
     if (b.opened && b.used === "courses") { courseUses++; if (courseUses === 3) add(d, "On finish", "In-app", "LRN-03", "Course done. Try one line on Khalid today", "You finished the lesson set. Use one line from it on your next call and log how it went.", "Completed a course: turn learning into a call.", "Milestone"); }
     if (b.opened && b.stage === "Closure" && b.calls > 0 && !closed) { closed = true; refDay = d + 1; add(d, "On close", "In-app", "CRM-06", "Closed. Well done, Guru", "That's a deal done. Take a minute, then tomorrow's plan picks the next lead.", "Closed a deal: celebrate first, no ask today.", "Milestone"); }
+    if (activated && inactive < 3 && d > firstOpen && (d - firstOpen) % 7 === 3) add(d, "10:00 AM", "Email", "LAB-01", "Live Lab tonight: fix your toughest call", em("Tonight at 7 PM: {lab_title}.", ["Bring one real client situation", "We fix the call live, in 45 minutes"], "Save my seat"), "LiveLab day: session today.", "LiveLab");
+    if (activated && inactive < 3 && d > firstOpen && (d - firstOpen) % 7 === 4) { const went = (usage.labs || 0) > 0 && usedYesterday.has("labs"); add(d, "10:00 AM", "Email", went ? "LAB-04" : "LAB-03", went ? "The replay is up, plus your 3 lines" : "Missed the Lab? The 8 minutes that matter", went ? em("Thanks for joining. Here's the part worth rewatching.", ["The call-back script at minute 21", "3 lines to use on today's calls"], "Watch the replay") : em("No stress. The best part is short.", ["8 minutes on call-backs", "Watch it with your coffee"], "Watch the 8-minute clip"), went ? "Attended yesterday's Lab: replay and takeaways." : "Missed yesterday's Lab: short replay.", "LiveLab"); }
     if (activated && inactive < 3 && d > firstOpen) {
       const o = OBJ[obj % OBJ.length]; obj++;
       if (add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `"${o[0]}"`, o[1], "WhatsApp role: one objection + the fix to use today.", "Value")) valueSent++;
       const canOffer = /Not paid|Trial|expired|Expired/.test(status);
       const offerOk = canOffer && activeDays >= 3 && valueSent >= (offersSent + 1) * 4 && d - lastOffer >= 3;
-      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], of[1] + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages sent first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
+      if (offerOk && offersSent < OFFERS.length && !(offersSent >= 1 && leads === 0)) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], of[1] + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages sent first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
       else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; if (add(d, "6:30 PM", "Email", "VAL", v[1], v[2] + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value")) valueSent++; }
     }
   }
-  return { msgs, state: { "Payment status": status, "Opened ever": activated ? `Yes, day ${firstOpen}` : "No", "Lead added": leadAdded ? "Yes" : "No", "Call streak": `${streak} days`, "Days inactive": `${inactive}`, "Active days": `${activeDays}`, "Features tried": `${tried.size} of ${FEATS.length}`, "Value / offers sent": `${valueSent} / ${offersSent}`, "Deal closed": closed ? "Yes" : "No", "Courses opened": `${courseUses}`, "Suppressed so far": `${msgs.filter((m) => m.sup).length}` } };
+  return { msgs, state: { "Payment status": status, "Opened ever": activated ? `Yes, day ${firstOpen}` : "No", "Lead added": leadAdded ? "Yes" : "No", "Leads in CRM": `${leads}`, "Doors used": DOORS.filter((k) => usage[k]).map((k) => FEATS.find((f) => f.key === k).name).join(", ") || "None", "Call streak": `${streak} days`, "Days inactive": `${inactive}`, "Active days": `${activeDays}`, "Features tried": `${tried.size} of ${FEATS.length}`, "Value / offers sent": `${valueSent} / ${offersSent}`, "Deal closed": closed ? "Yes" : "No", "Courses opened": `${courseUses}`, "Suppressed so far": `${msgs.filter((m) => m.sup).length}` } };
 }
 
 
@@ -244,5 +293,11 @@ const EXTRA = {
   "Course learner": (d) => ({ opened: true, used: "courses", calls: d % 2, stage: "Cold Calling" }),
   "Weekend opener": (d) => d % 7 === 5 || d % 7 === 6 ? { opened: true, used: "market", calls: 1, stage: "Follow-up" } : { opened: false, used: "none", calls: 0, stage: "Follow-up" },
 };
+Object.assign(EXTRA, {
+  "Zero leads (uses other features)": (d) => ({ opened: d % 4 !== 0, used: d % 4 === 0 ? "none" : ["courses", "ebooks", "none", "labs", "scripts", "none", "coach"][d % 7], calls: 0, stage: "None" }),
+  "Zero leads, rarely opens": (d) => ({ opened: d === 1 || d % 5 === 0, used: d % 10 === 0 ? "ebooks" : "none", calls: 0, stage: "None" }),
+  "Only 1 lead": (d) => ({ opened: true, used: d === 1 ? "crm" : ["coach", "none", "scripts", "courses"][d % 4], calls: 1, stage: "Follow-up", addLeads: 1 }),
+  "Leads not updated (5+ days)": (d) => ({ opened: d % 3 !== 0, used: d <= 3 ? "crm" : ["courses", "coach", "none"][d % 3], calls: d <= 3 ? 2 : 0, stage: "Follow-up", addLeads: 2 }),
+});
 Object.assign(PERSONAS, EXTRA);
-if (typeof module !== "undefined") module.exports = { simulate, PERSONAS, FEATS, PAYS, payStatus };
+if (typeof module !== "undefined") module.exports = { simulate, PERSONAS, FEATS, PAYS, payStatus, DOORS };

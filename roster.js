@@ -26,12 +26,16 @@ var ROSTER = [
   { id: "R23", name: "Maryam (course learner)", start: "2026-10-19", persona: "Course learner", pay: "Trial, then pays", cond: "Completes a course" },
   { id: "R24", name: "Imran (weekend opener)", start: "2026-10-12", persona: "Weekend opener", pay: "Not paid (free)", cond: "Irregular user" },
   { id: "R25", name: "Sofia (tight cap)", start: "2026-10-17", persona: "Ideal user", pay: "Not paid (free)", cap: 3, cond: "Daily cap 3" },
+  { id: "R27", name: "Nadia (zero leads, uses courses)", start: "2026-10-20", persona: "Zero leads (uses other features)", pay: "Not paid (free)", cond: "Zero leads in CRM" },
+  { id: "R28", name: "Faisal (zero leads, rarely opens)", start: "2026-10-18", persona: "Zero leads, rarely opens", pay: "Trial, doesn't pay", cond: "Zero leads, rarely opens" },
+  { id: "R29", name: "Ritu (only 1 lead)", start: "2026-10-16", persona: "Only 1 lead", pay: "Not paid (free)", cond: "Only 1 lead" },
+  { id: "R30", name: "Jamal (leads not updated)", start: "2026-10-15", persona: "Leads not updated (5+ days)", pay: "Paid, then inactive", cond: "Leads not updated 5+ days" },
   { id: "R26", name: "Bilal (Ramadan timing)", start: "2026-10-20", persona: "Ideal user", pay: "Trial, doesn't pay", ramadan: true, cond: "Ramadan timing" },
 ];
 function featureOf(m) {
   const p = m.id.split("-")[0];
-  if (m.id === "PROMO") { const x = /feature[: (]+([^,)]+)/.exec(m.why); return x ? x[1].trim() : "Feature nudge"; }
-  return ({ MC: "Morning Coach", OLC: "One-Lead", HAB: "Streak", ACC: "Onboarding", WB: "Win-back", SLP: "Re-entry", PAY: "Payments", IMP: "Payments", REF: "Referral", TEAM: "Team", CRM: "CRM", LRN: "Courses", "WA": "Objection (WhatsApp)", VAL: "Value", OFFER: "Offer" })[p] || p;
+  if (m.id === "PROMO") { const x = /Door: ([^.]+)\./.exec(m.why); return x ? x[1].trim() : "Feature nudge"; }
+  return ({ MC: "Morning Coach", OLC: "One-Lead", HAB: "Streak", ACC: "Onboarding", WB: "Win-back", SLP: "Re-entry", PAY: "Payments", IMP: "Payments", REF: "Referral", TEAM: "Team", CRM: "CRM", LRN: "Courses", LAB: "Live Labs", "WA": "Objection (WhatsApp)", VAL: "Value", OFFER: "Offer" })[p] || p;
 }
 function dayIdx(start, date) { return Math.round((Date.parse(date + "T00:00:00Z") - Date.parse(start + "T00:00:00Z")) / 864e5) + 1; }
 function deliveriesFor(date) {

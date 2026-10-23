@@ -3,7 +3,7 @@ const KEY = "r1me-profile";
 const T = todayIST();
 const addDays = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
 const WEEK_START = "2026-10-23";
-const DEF = { week: {}, fb: {}, name: "", signup: addDays(T, -6), firstOpen: addDays(T, -6), never: false, pay: "Not paid", trialEnd: addDays(T, 3), feats: {}, callsWeek: 5, callsToday: 0, openedToday: true, usedToday: "none", stage: "Follow-up", habit: "Most days", deal: false, owner: false, push: true, email: true, wa: true, ramadan: false, holiday: false, cap: 4 };
+const DEF = { week: {}, fb: {}, name: "", signup: addDays(T, -6), firstOpen: addDays(T, -6), never: false, pay: "Not paid", trialEnd: addDays(T, 3), feats: {}, callsWeek: 5, callsToday: 0, openedToday: true, usedToday: "none", stage: "Follow-up", habit: "Most days", deal: false, owner: false, push: true, email: true, wa: true, ramadan: false, holiday: false, cap: 4, leadsMode: "Several", staleDays: 0 };
 const PAYOPTS = ["Not paid", "Trial (with end date)", "Paid", "Payment failed", "Cancelled", "Expired"];
 const enc = (o) => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/, "");
 const dec = (s) => { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } };
@@ -13,10 +13,11 @@ let P = { ...DEF }, SHOWN = false, VIEW = "week";
 function model(p, today, mods) {
   const D = Math.max(1, dayIdx(p.signup, today));
   const fo = p.never ? Infinity : Math.max(1, dayIdx(p.signup, p.firstOpen));
-  const used = FEATS.filter((f) => p.feats[f.key] === "used").map((f) => f.key);
+  const used = FEATS.filter((f) => p.feats[f.key] === "used" && (f.key !== "crm" || (p.leadsMode === "Several" && !(+p.staleDays > 0)))).map((f) => f.key);
   const opensWeek = { "Every day": 7, "Most days": 5, "Rarely": 1, "Not yet": 0 }[p.habit] || 1;
   const perOpen = p.callsWeek > 0 ? Math.max(1, Math.round(p.callsWeek / Math.max(1, opensWeek))) : 0;
-  const stage = p.deal ? "Closure" : p.stage;
+  const stage = p.leadsMode === "0" ? "None" : p.deal ? "Closure" : p.stage;
+  const crmDay = p.leadsMode === "1" ? fo : p.leadsMode === "Several" && +p.staleDays > 0 ? D - +p.staleDays : -1;
   const ck = {};
   for (const [dt, c] of Object.entries(p.week || {})) { const i = dayIdx(p.signup, dt); if (i >= 1) ck[i] = { opened: !!c.opened, used: c.opened && c.used && c.used.length ? c.used[0] : "none", calls: c.opened ? +c.calls || 0 : 0, stage: p.deal ? "Closure" : (c.stage || p.stage), holiday: !!c.holiday }; }
   const beh = (d) => {
@@ -27,6 +28,7 @@ function model(p, today, mods) {
     if (d === D) { const o = d === fo ? true : !!p.openedToday; return { opened: o, used: o ? p.usedToday : "none", calls: o ? +p.callsToday : 0, stage, holiday: !!p.holiday }; }
     let o = d === fo || { "Every day": true, "Most days": d % 3 !== 0, "Rarely": d % 5 === 0, "Not yet": false }[p.habit];
     if (d > D && p.habit === "Not yet") o = false;
+    if (d === crmDay) return { opened: true, used: "crm", calls: perOpen, stage, addLeads: p.leadsMode === "1" ? 1 : 3 };
     return { opened: !!o, used: o && used.length ? used[d % used.length] : "none", calls: o ? perOpen : 0, stage };
   };
   const rel = fo === Infinity ? 0 : D - fo;
@@ -51,7 +53,7 @@ function form() {
   <fieldset><legend>You</legend><div class="row">${f("name", "Name")}${f("signup", "Signup date", "date")}${f("firstOpen", "First opened the app", "date")}${c("never", "Never opened yet")}</div></fieldset>
   <fieldset><legend>Payment</legend><div class="row">${s("pay", "Payment status", PAYOPTS)}${P.pay.startsWith("Trial") ? f("trialEnd", "Trial end date", "date") : ""}</div></fieldset>
   <fieldset><legend>Features (used / ignored / not seen yet)</legend><div class="feats">${FEATS.map((x) => `<label>${esc(x.name)}<select data-feat="${x.key}">${["unseen", "used", "ignored"].map((v) => `<option value="${v}"${(P.feats[x.key] || "unseen") === v ? " selected" : ""}>${{ unseen: "Not seen", used: "Used", ignored: "Ignored" }[v]}</option>`).join("")}</select></label>`).join("")}</div></fieldset>
-  <fieldset><legend>Your week and today</legend><div class="row">${f("callsWeek", "Calls logged this week", "number")}${s("habit", "Morning Coach habit", ["Every day", "Most days", "Rarely", "Not yet"])}${s("stage", "Current lead stage", STAGES)}${c("openedToday", "Opened the app today")}${f("callsToday", "Calls logged today", "number")}${s("usedToday", "Feature used today", [["none", "None"], ...FEATS.map((x) => [x.key, x.name])])}${c("deal", "Deal closed")}${c("owner", "Brokerage owner")}</div></fieldset>
+  <fieldset><legend>Your week and today</legend><div class="row">${f("callsWeek", "Calls logged this week", "number")}${s("habit", "Morning Coach habit", ["Every day", "Most days", "Rarely", "Not yet"])}${s("leadsMode", "Leads in my CRM", [["0", "Zero leads"], ["1", "Only 1 lead"], ["Several", "Several leads"]])}${P.leadsMode === "Several" ? f("staleDays", "Days since I last updated a lead", "number") : ""}${s("stage", "Current lead stage", STAGES)}${c("openedToday", "Opened the app today")}${f("callsToday", "Calls logged today", "number")}${s("usedToday", "Feature used today", [["none", "None"], ...FEATS.map((x) => [x.key, x.name])])}${c("deal", "Deal closed")}${c("owner", "Brokerage owner")}</div></fieldset>
   <fieldset><legend>Channels and timing</legend><div class="row">${c("push", "Push on")}${c("email", "Email on")}${c("wa", "WhatsApp on")}${c("ramadan", "Ramadan timing")}${c("holiday", "Public holiday today")}${s("cap", "Daily cap", ["3", "4", "5"])}</div></fieldset>
   <div class="row"><button class="pri" data-a="go">Show my messages</button><button data-a="share">Copy my link</button><button data-a="clear">Clear my details</button><span id="msg" class="muted"></span></div>
   <p class="muted">Your details stay in this browser (and in the link if you share it). Nothing is sent anywhere.</p></section>`;
@@ -113,7 +115,7 @@ function readForm() {
   document.querySelectorAll("[data-f]").forEach((el) => { const k = el.dataset.f; P[k] = el.type === "checkbox" ? el.checked : el.type === "number" ? Math.max(0, +el.value || 0) : el.value; });
   document.querySelectorAll("[data-feat]").forEach((el) => { P.feats[el.dataset.feat] = el.value; });
 }
-document.addEventListener("change", (e) => { if (e.target.dataset.f === "pay") { readForm(); render(); } if (e.target.dataset.fbn) { const k = e.target.dataset.fbn; P.fb[k] = { ...(P.fb[k] || {}), note: e.target.value }; persist(); } });
+document.addEventListener("change", (e) => { if (e.target.dataset.f === "pay" || e.target.dataset.f === "leadsMode") { readForm(); render(); } if (e.target.dataset.fbn) { const k = e.target.dataset.fbn; P.fb[k] = { ...(P.fb[k] || {}), note: e.target.value }; persist(); } });
 document.addEventListener("click", (e) => {
   const t = e.target;
   if (t.dataset && t.dataset.view) { e.preventDefault(); VIEW = t.dataset.view; render(); return; }
