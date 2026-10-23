@@ -1,0 +1,19 @@
+name: Rule tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Regenerate log with current rules (not committed)
+        run: rm -f data/log.json && node scripts/daily.js
+      - name: Rule checks (today)
+        run: node tests/run.js
+      - name: Rule checks (next 60 days, forward simulation)
+        run: rm -f data/log.json && LOG_DATE=$(date -u -d "+60 days" +%F) node scripts/daily.js && node tests/run.js

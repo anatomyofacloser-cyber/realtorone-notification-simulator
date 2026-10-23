@@ -107,11 +107,12 @@ function simulate(days, beh, opt) {
     else if (holiday && kind === "Offer") sup = "Suppressed: no offers on public holidays.";
     if (!sup) { acts.add(act); chans.add(ch); sent++; }
     msgs.push({ day, time, ch, id, title, body, why, kind, sup: sup || undefined });
+    return !sup;
   };
   for (let d = 1; d <= days; d++) {
     const b = beh(d);
     holiday = !!b.holiday; acts = new Set(); chans = new Set(); sent = 0;
-    const rel = activated ? d - firstOpen : -1;
+    const rel = activated ? d - firstOpen + (opt.shift || 0) : -1;
     status = payStatus(opt.pay, rel, inactive);
     // priority 1: money (one money message a day max)
     if (activated) {
@@ -147,10 +148,10 @@ function simulate(days, beh, opt) {
         continue;
       }
       activated = true; firstOpen = d;
-      status = payStatus(opt.pay, 0, 0);
+      status = payStatus(opt.pay, opt.shift || 0, 0);
       add(d, "On open", "In-app", "ACC-03", "Welcome, Guru. Let's start with one lead.", "Add the client you keep putting off. Tomorrow 8 AM your coach tells you exactly what to say.", "First open: welcome only now, never before.", "Welcome");
       add(d, "On open", "Email", "ACC-03", "Welcome, Guru. Let's start with one lead.", "Hi Guru,\n\nYou don't need another app that sends reminders. You need someone to tell you what to say when the client goes quiet.\n\nStart small: add one lead today. Tomorrow at 8 AM you'll get who to call first, three steps, and one thing not to say." + SIG, "Welcome email would repeat the in-app welcome.", "Welcome");
-      if (opt.pay !== "Not paid (free)" && !opt.pay.startsWith("Trial")) add(d, "On pay", "In-app", "PAY-06", "All your leads are unlocked", "Import your CRM list. Tomorrow's plan covers all of them.", "Paid on day one.", "Milestone");
+      if (opt.pay !== "Not paid (free)" && !opt.pay.startsWith("Trial") && !(opt.shift > 0)) add(d, "On pay", "In-app", "PAY-06", "All your leads are unlocked", "Import your CRM list. Tomorrow's plan covers all of them.", "Paid on day one.", "Milestone");
     } else {
       if (inactive === 0 || inactive === 1) {
         if (leadAdded) add(d, "8:00 AM", "Push", "MC-01", "Today: call Khalid first", COACH[b.stage === "None" ? "Follow-up" : b.stage] || COACH["Follow-up"], "Daily Morning Coach, only once a lead exists.", "Daily");
@@ -185,12 +186,11 @@ function simulate(days, beh, opt) {
     if (b.opened && b.stage === "Closure" && b.calls > 0 && !closed) { closed = true; refDay = d + 1; add(d, "On close", "In-app", "CRM-06", "Closed. Well done, Guru", "That's a deal done. Take a minute, then tomorrow's plan picks the next lead.", "Closed a deal: celebrate first, no ask today.", "Milestone"); }
     if (activated && inactive < 3 && d > firstOpen) {
       const o = OBJ[obj % OBJ.length]; obj++;
-      add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `Today's objection: ${o[0]}`, `How to handle it today: ${o[1]}`, "WhatsApp role: one objection + the fix to use today.", "Value");
+      if (add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `Today's objection: ${o[0]}`, `How to handle it today: ${o[1]}`, "WhatsApp role: one objection + the fix to use today.", "Value")) valueSent++;
       const canOffer = /Not paid|Trial|expired|Expired/.test(status);
-      const offerOk = canOffer && activeDays >= 3 && valueSent >= 3 && valueSent >= (offersSent + 1) * 4 - 1 && d - lastOffer >= 3;
-      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], `Hi Guru,\n\n${of[1]}` + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
-      else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; valueSent++; add(d, "6:30 PM", "Email", "VAL", v[1], `Hi Guru,\n\n${v[2]}` + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value"); }
-      else valueSent++;
+      const offerOk = canOffer && activeDays >= 3 && valueSent >= (offersSent + 1) * 4 && d - lastOffer >= 3;
+      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], `Hi Guru,\n\n${of[1]}` + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages sent first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
+      else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; if (add(d, "6:30 PM", "Email", "VAL", v[1], `Hi Guru,\n\n${v[2]}` + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value")) valueSent++; }
     }
   }
   return { msgs, state: { "Payment status": status, "Opened ever": activated ? `Yes, day ${firstOpen}` : "No", "Lead added": leadAdded ? "Yes" : "No", "Call streak": `${streak} days`, "Days inactive": `${inactive}`, "Active days": `${activeDays}`, "Features tried": `${tried.size} of ${FEATS.length}`, "Value / offers sent": `${valueSent} / ${offersSent}`, "Deal closed": closed ? "Yes" : "No", "Courses opened": `${courseUses}`, "Suppressed so far": `${msgs.filter((m) => m.sup).length}` } };

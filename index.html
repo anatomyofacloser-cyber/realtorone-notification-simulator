@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RealtorOne Notification Simulator</title><style>:root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#5d6673;--bd:#dde1e6;--ac:#1f6feb;--wa:#dcf3e3;--su:#fff4e0}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><link rel="icon" href="data:,"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RealtorOne Notification Simulator</title><style>:root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#5d6673;--bd:#dde1e6;--ac:#1f6feb;--wa:#dcf3e3;--su:#fff4e0}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#181b21;--tx:#e8eaed;--mu:#9aa3ae;--bd:#2c313a;--ac:#5b9dff;--wa:#163524;--su:#3a2b12}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 header{padding:16px 16px 0;max-width:1200px;margin:auto}header h1{margin:0;font-size:22px}header p{margin:4px 0 0;color:var(--mu)}
@@ -26,7 +26,7 @@ button{cursor:pointer}button.pri,button.on,.views a.on{background:var(--ac);colo
 table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--bd);padding:6px;text-align:left;vertical-align:top}.scroll{overflow-x:auto;max-height:460px;overflow-y:auto}
 .ck{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;border-top:1px solid var(--bd);padding:8px 0}.ck label{flex-direction:row;font-size:14px;color:var(--tx);gap:8px;flex:1 1 260px;align-items:flex-start}.ck a{color:var(--ac);font-size:13px}
 ul{padding-left:18px}li{margin:4px 0}
-</style></head><body><header><h1>RealtorOne Notification Simulator</h1><p>Test copy: pick a user type and payment path, step through the days, and see every message on every channel, plus what was held back and why. <a href="./log/">Open the daily notification log</a></p></header><main id="app"></main><script>
+</style></head><body><header><h1>RealtorOne Notification Simulator</h1><p>Test copy: pick a user type and payment path, step through the days, and see every message on every channel, plus what was held back and why.</p><nav class="top"><a href="./">Simulator</a><a href="./log/">Daily log</a><a href="./stats/">Stats</a><a href="./me/">What will I get?</a></nav></header><style>nav.top{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:14px}nav.top a{color:var(--ac)}</style><main id="app"></main><script>
 const FEATS = [
   { key: "coach", name: "Morning Coach", promo: [["That call you keep delaying?", "Your coach has the first line ready. 2 minutes."], ["Who should you call first today?", "Open the plan. One name, three steps."]] },
   { key: "crm", name: "DealFlow CRM", promo: [["Khalid: no touch in 7 days", "Silence isn't a no. Here's a 2-line message that isn't copy-paste."], ["Where do your leads leak?", "See which stage loses you the most clients. One screen."]] },
@@ -136,6 +136,7 @@ function simulate(days, beh, opt) {
     else if (holiday && kind === "Offer") sup = "Suppressed: no offers on public holidays.";
     if (!sup) { acts.add(act); chans.add(ch); sent++; }
     msgs.push({ day, time, ch, id, title, body, why, kind, sup: sup || undefined });
+    return !sup;
   };
   for (let d = 1; d <= days; d++) {
     const b = beh(d);
@@ -214,12 +215,11 @@ function simulate(days, beh, opt) {
     if (b.opened && b.stage === "Closure" && b.calls > 0 && !closed) { closed = true; refDay = d + 1; add(d, "On close", "In-app", "CRM-06", "Closed. Well done, Guru", "That's a deal done. Take a minute, then tomorrow's plan picks the next lead.", "Closed a deal: celebrate first, no ask today.", "Milestone"); }
     if (activated && inactive < 3 && d > firstOpen) {
       const o = OBJ[obj % OBJ.length]; obj++;
-      add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `Today's objection: ${o[0]}`, `How to handle it today: ${o[1]}`, "WhatsApp role: one objection + the fix to use today.", "Value");
+      if (add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `Today's objection: ${o[0]}`, `How to handle it today: ${o[1]}`, "WhatsApp role: one objection + the fix to use today.", "Value")) valueSent++;
       const canOffer = /Not paid|Trial|expired|Expired/.test(status);
-      const offerOk = canOffer && activeDays >= 3 && valueSent >= 3 && valueSent >= (offersSent + 1) * 4 - 1 && d - lastOffer >= 3;
-      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], `Hi Guru,\n\n${of[1]}` + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
-      else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; valueSent++; add(d, "6:30 PM", "Email", "VAL", v[1], `Hi Guru,\n\n${v[2]}` + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value"); }
-      else valueSent++;
+      const offerOk = canOffer && activeDays >= 3 && valueSent >= (offersSent + 1) * 4 && d - lastOffer >= 3;
+      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], `Hi Guru,\n\n${of[1]}` + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages sent first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
+      else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; if (add(d, "6:30 PM", "Email", "VAL", v[1], `Hi Guru,\n\n${v[2]}` + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value")) valueSent++; }
     }
   }
   return { msgs, state: { "Payment status": status, "Opened ever": activated ? `Yes, day ${firstOpen}` : "No", "Lead added": leadAdded ? "Yes" : "No", "Call streak": `${streak} days`, "Days inactive": `${inactive}`, "Active days": `${activeDays}`, "Features tried": `${tried.size} of ${FEATS.length}`, "Value / offers sent": `${valueSent} / ${offersSent}`, "Deal closed": closed ? "Yes" : "No", "Courses opened": `${courseUses}`, "Suppressed so far": `${msgs.filter((m) => m.sup).length}` } };
