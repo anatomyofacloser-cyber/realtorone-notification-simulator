@@ -11,6 +11,20 @@ const live = (r) => r.kind === "Milestone" && r.ch === "In-app";
 const BANNED = /\b(beliefs?|identity|mindset|subconscious)\b/i;
 const PAIDLIKE = /^(Paid|Renewed|Cancelled)/;
 const REPEAT_N = 7, NO_REPEAT_KINDS = ["Feature nudge", "Offer", "Value", "Re-entry", "Referral"];
+const EMOJI = /\p{Extended_Pictographic}/gu;
+function lint(r) {
+  const t = r.title || "", b = (r.body || "").replace(/\n\nYour coach, RealtorOne$|\n\nRealtorOne$/, ""), errs = [];
+  const all = t + " " + b;
+  if ((all.match(EMOJI) || []).length > 1) errs.push("more than 1 emoji");
+  if ((all.match(/!/g) || []).length > 1) errs.push("exclamation spam");
+  if (BANNED.test(all)) errs.push("banned word");
+  const arrows = (b.match(/→/g) || []).length;
+  if (r.ch === "Push") { if (t.length > 40) errs.push(`push title ${t.length}>40`); if (b.length > 90) errs.push(`push body ${b.length}>90`); if (arrows) errs.push("push has CTA arrow"); }
+  if (r.ch === "In-app") { const w = t.trim().split(/\s+/).length; if (w > 8) errs.push(`in-app headline ${w} words`); if (arrows !== 1) errs.push("in-app needs exactly 1 CTA"); else { const [line, cta] = b.split("→"); if (line.trim().length > 90) errs.push("in-app line >90"); if (cta.trim().split(/\s+/).length > 3) errs.push("in-app CTA >3 words"); } }
+  if (r.ch === "Email") { if (t.length > 45) errs.push(`subject ${t.length}>45`); if (arrows !== 1) errs.push("email needs exactly 1 CTA"); if ((b.match(/^• /gm) || []).length > 3) errs.push("more than 3 bullets"); if (b.length > 600) errs.push("email body too long"); }
+  if (r.ch === "WhatsApp") { if (!/^".+"$/.test(t.trim())) errs.push("WhatsApp title must be the objection in quotes"); if (b.length > 160) errs.push(`WhatsApp reply ${b.length}>160`); if (b.split("\n").length > 2) errs.push("WhatsApp reply >2 lines"); }
+  return errs;
+}
 const toMin = (t) => { const m = /^(\d{1,2}):(\d{2}) (AM|PM)/.exec(t); if (!m) return null; let h = +m[1] % 12; if (m[3] === "PM") h += 12; return h * 60 + +m[2]; };
 const users = Object.fromEntries(R.ROSTER.map((u) => [u.id, u]));
 const firstOpen = {}, activeBefore = {};
@@ -30,6 +44,7 @@ const RULES = [
   ["quiet-hours", "Scheduled sends between 8 AM and 9 PM"],
   ["money-per-day", "Max 1 payment message per day"],
   ["has-reason", "Every row has a reason"],
+  ["copy-lint", "Copy: length limits, max 1 emoji, max 1 '!', single CTA, WhatsApp objection format"],
 ];
 out.rules = RULES.map(([id, name]) => ({ id, name }));
 const lastSeen = {}; const cum = {};
@@ -76,7 +91,7 @@ for (const date of dates) {
       lastSeen[k] = t;
     }
   }
-  for (const r of rows) if (!r.why || !r.why.trim()) fail["has-reason"].push(r);
+  for (const r of rows) { if (!r.why || !r.why.trim()) fail["has-reason"].push(r); const le = lint(r); if (le.length) fail["copy-lint"].push({ ...r, note: le.join("; ") }); }
   const res = RULES.map(([id]) => ({ id, pass: fail[id].length === 0, failures: fail[id].length, rows: fail[id].slice(0, 20).map((r) => ({ user: r.user, name: r.name, day: r.day, ch: r.ch, time: r.time, id: r.id, title: r.title, note: r.note || "" })) }));
   out.days[date] = { rows: rows.length, sent: sent.length, passed: res.filter((x) => x.pass).length, total: res.length, results: res };
 }

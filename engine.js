@@ -1,44 +1,84 @@
 const FEATS = [
-  { key: "coach", name: "Morning Coach", promo: [["That call you keep delaying?", "Your coach has the first line ready. 2 minutes."], ["Who should you call first today?", "Open the plan. One name, three steps."]] },
-  { key: "crm", name: "DealFlow CRM", promo: [["Khalid: no touch in 7 days", "Silence isn't a no. Here's a 2-line message that isn't copy-paste."], ["Where do your leads leak?", "See which stage loses you the most clients. One screen."]] },
-  { key: "scripts", name: "Scripts", promo: [["What do you say after \"let me think\"?", "We have the exact line. Tap to copy."], ["Client went silent? Try this", "A 2-line WhatsApp that doesn't sound like a template."]] },
-  { key: "market", name: "Market (DealRadar)", promo: [["Dubai today: {headline}", "Use it as your opening line on the first call."], ["1 real sale to send a client today", "Pitch Client turns a DLD sale into a reason to talk."]] },
-  { key: "mission", name: "Daily Mission", promo: [["Today's mission: 3 call-backs", "10 minutes. It moves Khalid one step."], ["Half the day left", "Your mission takes 10 min. Do it before the 4 PM call rush."]] },
-  { key: "courses", name: "Courses", promo: [["2-minute lesson: before you dial", "For the voice-shaking calls after 10 no's."], ["You stopped halfway", "The best part is next: the exact words. 3 min left."]] },
-  { key: "ebooks", name: "E-books", promo: [["Free for you: The Follow-up Fortune", "For every client who said \"later\". 12-min read."], ["Month-end tight? Read War Time", "The plan for when the pipeline is thin."]] },
-  { key: "labs", name: "Live Labs", promo: [["Live Lab: {lab_title}", "Bring your toughest client. We'll fix the call live."], ["Missed it? Replay is up", "The 8-minute part on call-backs is worth it."]] },
-  { key: "deal", name: "Deal Room", promo: [["Got an offer on the table?", "Put it in Deal Room. Get the counter-offer script before you reply."], ["Khalid's deal has gone quiet", "Most stuck deals need one call, not one more message."]] },
-  { key: "ai", name: "Reven AI", promo: [["Stuck on what to reply?", "Paste the client's message. Get a reply that sounds like you."], ["Write tonight's follow-ups in 1 minute", "Tell Reven who and why. It drafts the words."]] },
-  { key: "brand", name: "Personal Branding", promo: [["Let clients find you", "Connect Instagram once. We draft the posts."], ["Your post draft is ready", "Approve today's draft before it goes live."]] },
+  { key: "coach", name: "Morning Coach", promo: [["The call you keep dodging? Line's ready", "Your coach wrote the first sentence. 2 minutes, then dial.", "Open plan"], ["Who do you call first today?", "One name, three steps, one thing not to say.", "See today's name"]] },
+  { key: "crm", name: "DealFlow CRM", promo: [["Marina viewing, then silence?", "Silence isn't a no. Find who went quiet and what to send.", "Open CRM"], ["Where do your deals leak?", "One screen shows the stage that loses you clients.", "Find my leak"]] },
+  { key: "scripts", name: "Scripts", promo: [["\"Let me think\" again? Say this", "The exact reply that keeps the deal warm. Tap to copy.", "Copy line"], ["Blue ticks, no reply?", "A 2-line WhatsApp that doesn't read like a template.", "Copy nudge"]] },
+  { key: "market", name: "Market (DealRadar)", promo: [["Slow morning? Steal this opener", "Dubai today: {headline}. Lead your first call with it.", "Use opener"], ["One real JVC sale. One reason to call", "Send a fresh DLD sale to a client in one tap.", "Pitch client"]] },
+  { key: "mission", name: "Daily Mission", promo: [["Today's mission: 3 call-backs", "10 minutes. Moves Khalid one step closer to keys.", "Start mission"], ["Half the day left. 10 minutes needed", "Finish today's mission before the 4 PM call rush.", "Finish it"]] },
+  { key: "courses", name: "Courses", promo: [["10 no's in a row? Watch this first", "2 minutes on keeping your voice steady before you dial.", "Play lesson"], ["You stopped right before the good part", "Next up: the exact words. 3 minutes left.", "Resume"]] },
+  { key: "ebooks", name: "E-books", promo: [["For every client who said \"later\"", "The Follow-up Fortune. A 12-minute read, free for you.", "Read free"], ["Thin pipeline this month?", "War Time: the plan for slow weeks in Dubai.", "Read now"]] },
+  { key: "labs", name: "Live Labs", promo: [["Bring your toughest client tonight", "Live Lab: {lab_title}. We fix the call live.", "Save seat"], ["Missed the Lab? Watch the 8 minutes", "The call-back part is worth your coffee break.", "Watch clip"]] },
+  { key: "deal", name: "Deal Room", promo: [["Offer on the table? Don't reply yet", "Get the counter-offer script first, then answer.", "Open Deal Room"], ["Khalid's deal went quiet", "Stuck deals need one call, not one more WhatsApp.", "Plan the call"]] },
+  { key: "ai", name: "Reven AI", promo: [["Stuck on what to reply?", "Paste the client's message. Get a reply in your voice.", "Write reply"], ["6 PM follow-ups in 60 seconds", "Tell Reven who and why. It drafts the words.", "Draft now"]] },
+  { key: "brand", name: "Personal Branding", promo: [["Let clients find you first", "Connect Instagram once. We draft the posts for you.", "Connect"], ["Your post draft is ready to go", "Approve today's draft before it goes live.", "Review post"]] },
 ];
 const ANGLES = ["Pain", "Curiosity", "Social proof", "Quick win", "Value gift", "Coach check-in"];
 const OBJ = [
-  ["\"It's too expensive.\"", "Pause. Ask: \"Compared to what?\" Show value before you touch the price. Hold on the first push back."],
-  ["\"Let me think about it.\"", "Ask: \"What's the one thing you're still unsure about?\" Then book a 10-min call within 48 hours."],
-  ["\"Send me details on WhatsApp.\"", "Say: \"Sure. Two quick questions first so I send only what fits.\" Keep them talking."],
-  ["\"I'm working with another agent.\"", "Say: \"No problem. If something off-market comes up in your area, can I share it?\" Leave the door open."],
-  ["\"Prices will drop, I'll wait.\"", "Share one recent DLD sale in their area. Ask: \"What price would make you move?\""],
-  ["\"Call me next month.\"", "Say: \"Happy to. What will be different next month?\" Put a date in the CRM now."],
-  ["No reply for a week.", "Don't send a long message. One line: \"Is this still a priority, or should I close your file?\""],
+  ["It's too expensive.", "Pause. Ask \"Compared to what?\" and show value before you touch price."],
+  ["Let me think about it.", "Ask \"What's the one thing you're unsure about?\" Then book 10 minutes within 48 hours."],
+  ["Just send details on WhatsApp.", "\"Sure. Two quick questions first, so I only send what fits.\""],
+  ["I'm working with another agent.", "\"No problem. If something off-market comes up in your area, can I share it?\""],
+  ["Prices will drop. I'll wait.", "Share one recent DLD sale in their area, then ask \"What price would make you move?\""],
+  ["Call me next month.", "\"Happy to. What will be different next month?\" Then put a date in the CRM."],
+  ["(Blue ticks. No reply for a week.)", "Skip the essay. One line: \"Is this still a priority, or shall I close your file?\""],
 ];
+const em = (hook, bullets, cta) => `Hi Guru,\n\n${hook}\n\n${bullets.map((b) => "• " + b).join("\n")}\n\n→ ${cta}`;
 const VALUE = [
-  ["E-book", "Free: The Follow-up Fortune", "Most deals are lost on the call-back you delayed, not the first call. This 12-minute read shows a simple follow-up rhythm you can start today. Open it in the app: E-books."],
-  ["Tip", "The 48-hour rule after \"I'll think about it\"", "After 48 hours most clients forget why they were excited. Call before then with one question about what they said. Your script is in Scripts."],
-  ["Market", "This week's busiest area: {area_name}", "{stat_units} units sold this week. Three clients in your CRM may care. Open DealRadar to send one sale in one tap."],
-  ["E-book", "Free: Beginner Roadmap", "New to Dubai real estate or restarting? A plain 30-day plan: who to call, what to learn, what to skip. Open it in E-books."],
-  ["Tip", "Stand up when you call", "Your voice sounds steadier on your feet. Try it on your first call tomorrow and log how it went."],
+  ["E-book", "The call-back you delayed cost a deal", em("Most deals die on the call-back, not the first call.", ["The 48-hour follow-up rhythm", "3 lines that don't sound like chasing", "12-minute read, free"], "Read The Follow-up Fortune in E-books")],
+  ["Tip", "Why \"I'll think about it\" goes cold", em("After 48 hours, clients forget why they were excited.", ["Call before the 48 hours are up", "Ask about one thing they said", "Your script is ready in Scripts"], "Open the \"let me think\" script")],
+  ["Market", "This week's busiest area: {area_name}", em("{stat_units} units sold this week. Three of your clients may care.", ["Pick one sale from DealRadar", "Send it with one line of context", "Ask what they think of the price"], "Open DealRadar and pitch one client")],
+  ["E-book", "Restarting in Dubai? Your 30-day map", em("New or restarting? Skip the noise.", ["Who to call in week one", "What to learn, what to skip", "Free: Beginner Roadmap"], "Open Beginner Roadmap in E-books")],
+  ["Tip", "The 6 PM cold call trick", em("Your voice sounds steadier when you stand.", ["Stand up for your first call", "Smile on the first sentence", "Log how it went"], "Try it on tomorrow's first call")],
 ];
 const OFFERS = [
-  ["Keep your CRM. Coach one lead free.", "Add the client you keep putting off. We'll coach you on that one lead from first call to keys, free. If it helps, unlock all your leads later."],
-  ["Unlock all your leads", "Your one lead is moving. Bring the rest in: import one Excel and tomorrow's plan covers all of them. {package_name}, cancel anytime."],
+  ["Keep your CRM. Get one lead coached free", em("That client you keep putting off? Let's coach just that one.", ["First call to keys, step by step", "Keep your current CRM", "Free, no card needed"], "Add your one lead")],
+  ["Your one lead is moving. Bring the rest?", em("Khalid moved a stage. Imagine that across your whole list.", ["Import one Excel", "Every lead gets a morning plan", "{package_name}, cancel anytime"], "Unlock all your leads")],
 ];
 const STAGES = ["None", "Cold Calling", "Follow-up", "Client Meeting", "Negotiation", "Closure"];
 const COACH = {
-  "Cold Calling": "Today: 5 calls before 11 AM. Say your name and one useful Dubai fact, ask one question, book a 10-min follow-up.",
-  "Follow-up": "Call Khalid first, not WhatsApp. Mention what he said last time, ask what's stopping him, set a date.",
-  "Client Meeting": "Meeting with Khalid. Ask 3 questions before showing anything. Show max 3 units.",
-  "Negotiation": "Khalid said \"too expensive\". Pause, ask what he's comparing to, show value before price.",
-  "Closure": "Close Khalid this week. Confirm budget and mortgage, send the MOU today, book the transfer date.",
+  "Cold Calling": "5 calls before 11. Name, one Dubai fact, one question. Book 10 minutes.",
+  "Follow-up": "Call, don't text. Mention last chat, ask what's stopping him, set a date.",
+  "Client Meeting": "Ask 3 questions before showing anything. Max 3 units.",
+  "Negotiation": "He said \"too expensive\". Pause, ask what he's comparing to.",
+  "Closure": "Confirm mortgage, send the MOU today, book the transfer date.",
+};
+const COPY = {
+  "ACC-01|Push": { t: "Viewing done. Client gone quiet?", b: "Get tomorrow's exact follow-up line. Sign up in 30 seconds." },
+  "ACC-02|Push": { t: "One lead. Zero cost. Zero CRM drama.", b: "We coach one client free, first call to keys. Keep your old CRM." },
+  "ACC-05|Email": { t: "The call-back you forgot cost a deal", b: em("Deals rarely die on the first call. They die on the forgotten call-back.", ["Add one client name", "We remind you at the right time", "With the right words"], "Add your first lead") },
+  "SLP-14|WhatsApp": { t: "\"I'll restart next week.\"", b: "Fair. Start smaller: reply YES and I'll send one 5-minute plan for today." },
+  "SLP-30|Email": { t: "Your history is saved, Guru", b: em("Slow month? It happens to every agent in Dubai.", ["Your leads and notes are where you left them", "Your coach is ready when you are"], "Make one call this week") },
+  "ACC-03|In-app": { t: "Start with the client you keep delaying", b: "Add one name. At 8 AM you get the exact words. → Add lead" },
+  "ACC-03|Email": { t: "Your first line for tomorrow, Guru", b: em("Reminders don't close deals. Knowing what to say does.", ["Add one lead today", "8 AM: who to call and what to say", "Plus one thing not to say"], "Add your first lead") },
+  "MC-01|Push": { t: "Today: call Khalid first ☕" },
+  "OLC-03|Push": { t: "Who's the client you keep delaying?", b: "Type one name. At 8 AM you get the exact words to say." },
+  "SLP-03|Push": { t: "Khalid's last message: blue ticks", b: "Silence isn't a no. Your 2-line nudge is written. Send it." },
+  "SLP-07|Push": { t: "Slow week? Restart with one call", b: "Your leads go to the agent who calls back. One call today." },
+  "SLP-07|Email": { t: "Slow week? Here's a 1-call restart", b: em("Khalid was at Follow-up when you last checked.", ["One short call usually restarts it", "Your opening line: \"Did anything change on the JVC 2-bed?\""], "Call Khalid today") },
+  "WB-02|In-app": { t: "Welcome back. Khalid is still warm", b: "Pick up exactly where you left off. → Call Khalid" },
+  "MC-02|Push": { t: "Khalid is warmest before 2 PM", b: "Your opening line is ready. One tap, then dial." },
+  "OLC-05|In-app": { t: "Khalid is tracked. Sleep easy", b: "8 AM: your opening line, 3 steps, one don't. → See plan" },
+  "HAB-05|In-app": { t: (s) => `${s} days of calls. That's a habit`, b: "Your streak counts calls, not app opens. → Keep going" },
+  "HAB-03|Push": { t: (s) => `Your ${s}-day streak needs one call`, b: "Even a 2-minute call counts. Log it and the day is yours." },
+  "MC-03|Push": { t: "6 PM. How did the calls land?", b: "Tap the result. 5 seconds. Tomorrow's plan gets sharper." },
+  "LRN-03|In-app": { t: "Course done. Use one line today", b: "Try it on Khalid's call, then log how it landed. → Open script" },
+  "CRM-06|In-app": { t: "Closed. Keys handed. Well done 🔑", b: "Take a minute. Tomorrow's plan picks the next lead. → View win" },
+  "PAY-T3|Push": { t: "3 trial days left. Make one count", b: "Your leads and morning plans are set. One call today." },
+  "PAY-01|Email": { t: "Trial ends tomorrow. Keep your leads?", b: em("Your trial ends tomorrow. Everything you built stays if you continue.", ["Your tracked leads", "Your 8 AM plans", "Your Deal Room notes"], "Continue my plan") },
+  "PAY-02|Push": { t: "Trial ends tonight", b: "Keep your coach, Deal Room and leads. One deal covers the year." },
+  "PAY-03|Email": { t: "Khalid's file is still here", b: em("Your trial ended. Nothing is lost.", ["Leads and notes saved", "Pick up in one tap"], "Pick up where I left off: {link_url}") },
+  "WB-01|Email": { t: "{stat_deals} deals closed. Why not yours?", b: em("Agents like you closed these starting with one lead.", ["Come back free for 7 days", "Your history is waiting"], "Restart free: {link_url}") },
+  "PAY-06|In-app": { t: "All your leads are unlocked", b: "Import your list. Tomorrow's plan covers everyone. → Import" },
+  "IMP-01|Email": { t: "Your old CRM leads, coached by tomorrow", b: em("Your plan only helps the leads it can see.", ["Upload one Excel", "Every lead gets an 8 AM plan"], "Import my leads") },
+  "PAY-08|Push": { t: "Plan's active. Khalid is waiting", b: "One call today makes this week count. Your line is ready." },
+  "PAY-05|Email": { t: "A card hiccup, fixed in 1 minute", b: em("Your last payment didn't go through.", ["Takes one minute", "Your 8 AM plans keep coming"], "Update my card: {link_url}") },
+  "PAY-05|Push": { t: "Card hiccup. Fix it in a minute", b: "Update your card so tomorrow's 8 AM plan still lands." },
+  "PAY-09|Email": { t: "Cancelled. Access stays till {end_date}", b: em("Done, no hard feelings.", ["Full access until {end_date}", "Your history stays saved"], "Tell us what didn't work (just reply)") },
+  "PAY-07|Email": { t: "Your access ended. Your history didn't", b: em("Your leads and notes are saved.", ["Restart any time", "Pick up exactly where you left off"], "Restart: {link_url}") },
+  "PAY-11|Email": { t: "Renews in 3 days. Here's your month", b: em("No action needed. Quick look at your month:", ["{calls} calls logged", "{deals} deals moved"], "See my month") },
+  "PAY-10|In-app": { t: "Renewed. Next month is ready", b: "Set this month's target in 30 seconds. → Set target" },
+  "REF-01|Email": { t: "Know an agent stuck where you were?", b: em("You closed with Khalid. Someone you know is still chasing blue ticks.", ["They get one lead coached free", "You both get {reward}"], "Share my win card") },
+  "REF-03|Email": { t: "Your team, same 8 AM plan?", b: em("Two weeks of daily calls. Your team could have the same morning.", ["One plan per agent", "One weekly team view"], "Send the team trial to my manager") },
+  "TEAM-01|Email": { t: "Your team this week, in 60 seconds", b: em("Here's your floor at a glance.", ["Calls logged: {team_calls}", "Stuck at Follow-up: {team_stuck}", "Check in with: {agent_name}"], "Open team view") },
 };
 
 const PERSONAS = {
@@ -94,6 +134,7 @@ function simulate(days, beh, opt) {
   const tried = new Set(), ignored = {};
   let acts = new Set(), chans = new Set(), sent = 0, holiday = false, closed = false, courseUses = 0, refDay = -1, status = "Not paid";
   const add = (day, time0, ch, id, title, body, why, kind) => {
+    const ov = COPY[id + "|" + ch]; if (ov) { if (ov.t) title = typeof ov.t === "function" ? ov.t(streak) : ov.t; if (ov.b) body = ov.b; }
     const act = ACT[id] || (id.startsWith("PAY") || id.startsWith("IMP") ? "money" : id);
     let time = time0;
     if (opt.ramadan && ch !== "In-app" && !time0.startsWith("On")) time = time0.endsWith("AM") ? "10:30 AM" : "8:30 PM (after Iftar)";
@@ -169,7 +210,7 @@ function simulate(days, beh, opt) {
           const v = pick.promo[Math.min(1, ignored[pick.key] || 0)];
           const ag = ANGLES[angle % ANGLES.length]; angle++;
           const prev = FEATS.find((f) => f.key === lastPromo);
-          add(d, b.opened ? "On open" : "11:00 AM", b.opened ? "In-app" : "Push", "PROMO", v[0], v[1], lastPromo ? `${prev ? prev.name : lastPromo} not used yesterday, so today: different feature (${pick.name}), angle: ${ag}.` : `First untried feature: ${pick.name}, angle: ${ag}.`, "Feature nudge");
+          add(d, b.opened ? "On open" : "11:00 AM", b.opened ? "In-app" : "Push", "PROMO", v[0], b.opened ? v[1] + " → " + v[2] : v[1], lastPromo ? `${prev ? prev.name : lastPromo} not used yesterday, so today: different feature (${pick.name}), angle: ${ag}.` : `First untried feature: ${pick.name}, angle: ${ag}.`, "Feature nudge");
           lastPromo = pick.key;
         }
       }
@@ -186,11 +227,11 @@ function simulate(days, beh, opt) {
     if (b.opened && b.stage === "Closure" && b.calls > 0 && !closed) { closed = true; refDay = d + 1; add(d, "On close", "In-app", "CRM-06", "Closed. Well done, Guru", "That's a deal done. Take a minute, then tomorrow's plan picks the next lead.", "Closed a deal: celebrate first, no ask today.", "Milestone"); }
     if (activated && inactive < 3 && d > firstOpen) {
       const o = OBJ[obj % OBJ.length]; obj++;
-      if (add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `Today's objection: ${o[0]}`, `How to handle it today: ${o[1]}`, "WhatsApp role: one objection + the fix to use today.", "Value")) valueSent++;
+      if (add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `"${o[0]}"`, o[1], "WhatsApp role: one objection + the fix to use today.", "Value")) valueSent++;
       const canOffer = /Not paid|Trial|expired|Expired/.test(status);
       const offerOk = canOffer && activeDays >= 3 && valueSent >= (offersSent + 1) * 4 && d - lastOffer >= 3;
-      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], `Hi Guru,\n\n${of[1]}` + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages sent first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
-      else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; if (add(d, "6:30 PM", "Email", "VAL", v[1], `Hi Guru,\n\n${v[2]}` + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value")) valueSent++; }
+      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], of[1] + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages sent first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
+      else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; if (add(d, "6:30 PM", "Email", "VAL", v[1], v[2] + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value")) valueSent++; }
     }
   }
   return { msgs, state: { "Payment status": status, "Opened ever": activated ? `Yes, day ${firstOpen}` : "No", "Lead added": leadAdded ? "Yes" : "No", "Call streak": `${streak} days`, "Days inactive": `${inactive}`, "Active days": `${activeDays}`, "Features tried": `${tried.size} of ${FEATS.length}`, "Value / offers sent": `${valueSent} / ${offersSent}`, "Deal closed": closed ? "Yes" : "No", "Courses opened": `${courseUses}`, "Suppressed so far": `${msgs.filter((m) => m.sup).length}` } };
