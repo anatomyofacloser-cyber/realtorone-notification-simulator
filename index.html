@@ -1,0 +1,373 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RealtorOne Notification Simulator</title><style>:root{--bg:#f6f7f9;--card:#fff;--tx:#14171c;--mu:#5d6673;--bd:#dde1e6;--ac:#1f6feb;--wa:#dcf3e3;--su:#fff4e0}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#181b21;--tx:#e8eaed;--mu:#9aa3ae;--bd:#2c313a;--ac:#5b9dff;--wa:#163524;--su:#3a2b12}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:16px 16px 0;max-width:1200px;margin:auto}header h1{margin:0;font-size:22px}header p{margin:4px 0 0;color:var(--mu)}
+#app{max-width:1200px;margin:auto;padding:12px 16px 40px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:12px 0}
+h2{font-size:17px;margin:0 0 10px}.h{margin:18px 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:8px 0}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:3px}label.tog{flex-direction:row;align-items:center;font-size:14px;color:var(--tx);gap:6px}
+select,button{font:inherit;font-size:14px;padding:7px 10px;border-radius:9px;border:1px solid var(--bd);background:var(--card);color:var(--tx);max-width:100%}
+button{cursor:pointer}button.pri,button.on,.views a.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.day{font-weight:600;font-size:18px;padding:0 6px}
+.views{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.views a{padding:7px 12px;border-radius:9px;border:1px solid var(--bd);color:var(--tx);text-decoration:none;background:var(--card)}
+.muted{color:var(--mu);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.lbl{font-size:12px;color:var(--mu);margin-bottom:6px}
+.phone{max-width:360px;margin:auto;border:2px solid var(--mu);border-radius:30px;padding:12px;background:var(--bg)}
+.lock{border:2px solid var(--mu);border-radius:22px;padding:12px;background:var(--bg)}
+.msg{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;margin:8px 0}.msg.accent{border-left:4px solid var(--ac)}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--mu)}
+.pre{white-space:pre-wrap;color:var(--mu);border-top:1px solid var(--bd);margin-top:6px;padding-top:6px}
+.screen{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;margin-top:8px;min-height:140px}.li{border-top:1px solid var(--bd);padding:4px 0;color:var(--mu)}
+.tabs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.tabs button{font-size:12px;padding:4px 8px}
+.wa{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px}.bubble{background:var(--wa);border-radius:12px;padding:10px;max-width:92%}.bubble .t{text-align:right;font-size:11px;color:var(--mu)}
+.why{border-top:1px solid var(--bd);padding:8px 0}.pill{font-size:11px;border:1px solid var(--bd);border-radius:6px;padding:1px 6px}.why.sup .pill{background:var(--su)}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--bd);padding:6px;text-align:left;vertical-align:top}.scroll{overflow-x:auto;max-height:460px;overflow-y:auto}
+.ck{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;border-top:1px solid var(--bd);padding:8px 0}.ck label{flex-direction:row;font-size:14px;color:var(--tx);gap:8px;flex:1 1 260px;align-items:flex-start}.ck a{color:var(--ac);font-size:13px}
+ul{padding-left:18px}li{margin:4px 0}
+</style></head><body><header><h1>RealtorOne Notification Simulator</h1><p>Test copy: pick a user type and payment path, step through the days, and see every message on every channel, plus what was held back and why.</p></header><main id="app"></main><script>
+const FEATS = [
+  { key: "coach", name: "Morning Coach", promo: [["That call you keep delaying?", "Your coach has the first line ready. 2 minutes."], ["Who should you call first today?", "Open the plan. One name, three steps."]] },
+  { key: "crm", name: "DealFlow CRM", promo: [["Khalid: no touch in 7 days", "Silence isn't a no. Here's a 2-line message that isn't copy-paste."], ["Where do your leads leak?", "See which stage loses you the most clients. One screen."]] },
+  { key: "scripts", name: "Scripts", promo: [["What do you say after \"let me think\"?", "We have the exact line. Tap to copy."], ["Client went silent? Try this", "A 2-line WhatsApp that doesn't sound like a template."]] },
+  { key: "market", name: "Market (DealRadar)", promo: [["Dubai today: {headline}", "Use it as your opening line on the first call."], ["1 real sale to send a client today", "Pitch Client turns a DLD sale into a reason to talk."]] },
+  { key: "mission", name: "Daily Mission", promo: [["Today's mission: 3 call-backs", "10 minutes. It moves Khalid one step."], ["Half the day left", "Your mission takes 10 min. Do it before the 4 PM call rush."]] },
+  { key: "courses", name: "Courses", promo: [["2-minute lesson: before you dial", "For the voice-shaking calls after 10 no's."], ["You stopped halfway", "The best part is next: the exact words. 3 min left."]] },
+  { key: "ebooks", name: "E-books", promo: [["Free for you: The Follow-up Fortune", "For every client who said \"later\". 12-min read."], ["Month-end tight? Read War Time", "The plan for when the pipeline is thin."]] },
+  { key: "labs", name: "Live Labs", promo: [["Live Lab: {lab_title}", "Bring your toughest client. We'll fix the call live."], ["Missed it? Replay is up", "The 8-minute part on call-backs is worth it."]] },
+  { key: "deal", name: "Deal Room", promo: [["Got an offer on the table?", "Put it in Deal Room. Get the counter-offer script before you reply."], ["Khalid's deal has gone quiet", "Most stuck deals need one call, not one more message."]] },
+  { key: "ai", name: "Reven AI", promo: [["Stuck on what to reply?", "Paste the client's message. Get a reply that sounds like you."], ["Write tonight's follow-ups in 1 minute", "Tell Reven who and why. It drafts the words."]] },
+  { key: "brand", name: "Personal Branding", promo: [["Let clients find you", "Connect Instagram once. We draft the posts."], ["Your post draft is ready", "Approve today's draft before it goes live."]] },
+];
+const ANGLES = ["Pain", "Curiosity", "Social proof", "Quick win", "Value gift", "Coach check-in"];
+const OBJ = [
+  ["\"It's too expensive.\"", "Pause. Ask: \"Compared to what?\" Show value before you touch the price. Hold on the first push back."],
+  ["\"Let me think about it.\"", "Ask: \"What's the one thing you're still unsure about?\" Then book a 10-min call within 48 hours."],
+  ["\"Send me details on WhatsApp.\"", "Say: \"Sure. Two quick questions first so I send only what fits.\" Keep them talking."],
+  ["\"I'm working with another agent.\"", "Say: \"No problem. If something off-market comes up in your area, can I share it?\" Leave the door open."],
+  ["\"Prices will drop, I'll wait.\"", "Share one recent DLD sale in their area. Ask: \"What price would make you move?\""],
+  ["\"Call me next month.\"", "Say: \"Happy to. What will be different next month?\" Put a date in the CRM now."],
+  ["No reply for a week.", "Don't send a long message. One line: \"Is this still a priority, or should I close your file?\""],
+];
+const VALUE = [
+  ["E-book", "Free: The Follow-up Fortune", "Most deals are lost on the call-back you delayed, not the first call. This 12-minute read shows a simple follow-up rhythm you can start today. Open it in the app: E-books."],
+  ["Tip", "The 48-hour rule after \"I'll think about it\"", "After 48 hours most clients forget why they were excited. Call before then with one question about what they said. Your script is in Scripts."],
+  ["Market", "This week's busiest area: {area_name}", "{stat_units} units sold this week. Three clients in your CRM may care. Open DealRadar to send one sale in one tap."],
+  ["E-book", "Free: Beginner Roadmap", "New to Dubai real estate or restarting? A plain 30-day plan: who to call, what to learn, what to skip. Open it in E-books."],
+  ["Tip", "Stand up when you call", "Your voice sounds steadier on your feet. Try it on your first call tomorrow and log how it went."],
+];
+const OFFERS = [
+  ["Keep your CRM. Coach one lead free.", "Add the client you keep putting off. We'll coach you on that one lead from first call to keys, free. If it helps, unlock all your leads later."],
+  ["Unlock all your leads", "Your one lead is moving. Bring the rest in: import one Excel and tomorrow's plan covers all of them. {package_name}, cancel anytime."],
+];
+const STAGES = ["None", "Cold Calling", "Follow-up", "Client Meeting", "Negotiation", "Closure"];
+const COACH = {
+  "Cold Calling": "Today: 5 calls before 11 AM. Say your name and one useful Dubai fact, ask one question, book a 10-min follow-up.",
+  "Follow-up": "Call Khalid first, not WhatsApp. Mention what he said last time, ask what's stopping him, set a date.",
+  "Client Meeting": "Meeting with Khalid. Ask 3 questions before showing anything. Show max 3 units.",
+  "Negotiation": "Khalid said \"too expensive\". Pause, ask what he's comparing to, show value before price.",
+  "Closure": "Close Khalid this week. Confirm budget and mortgage, send the MOU today, book the transfer date.",
+};
+
+const PERSONAS = {
+  "Ideal user": (d) => ({ opened: true, used: FEATS[(d - 1) % FEATS.length].key, calls: 3, stage: STAGES[Math.min(5, 1 + Math.floor((d - 1) / 5))] }),
+  "Never opens the app": () => ({ opened: false, used: "none", calls: 0, stage: "None" }),
+  "Opens, ignores features": (d) => ({ opened: true, used: "none", calls: d % 3 === 0 ? 1 : 0, stage: d > 2 ? "Cold Calling" : "None" }),
+  "Active, then slips (day 8)": (d) => d < 8 || d > 22 ? { opened: true, used: d > 22 ? "coach" : FEATS[(d - 1) % 4].key, calls: 2, stage: d > 4 ? "Follow-up" : "Cold Calling" } : { opened: false, used: "none", calls: 0, stage: "Follow-up" },
+  "Late starter (opens day 5)": (d) => d < 5 ? { opened: false, used: "none", calls: 0, stage: "None" } : { opened: true, used: d % 2 ? "crm" : "coach", calls: 2, stage: "Cold Calling" },
+};
+
+
+const PAYS = ["Not paid (free)", "Trial, doesn't pay", "Trial, then pays", "Paid, then inactive", "Paid, payment fails", "Paid, then cancels", "Paid, renews"];
+const ACT = { "MC-01": "today-plan", "MC-02": "today-plan", "OLC-03": "today-plan", "MC-03": "call-log", "HAB-03": "call-log", "ACC-03": "welcome", "WB-02": "welcome", "SLP-03": "re-entry", "SLP-07": "re-entry", "SLP-14": "re-entry", "SLP-30": "re-entry", "PAY-08": "re-entry" };
+const SCREENS = {
+  coach: ["Today's plan", "Who to call: Khalid (Follow-up)", "Steps: mention last talk, ask what's stopping him, set a date", "Do: call before 2 PM", "Don't: send the same copy-paste message to 20 people"],
+  crm: ["DealFlow CRM", "Cold Calling · Follow-up · Client Meeting · Negotiation · Closure", "Khalid: next contact today 11 AM", "Quiet 7+ days: {n} clients", "Your leak stage: {weak_stage}"],
+  olc: ["One-Lead Challenge", "One lead coached free, first call to keys", "Keep your current CRM", "Progress: added → called → meeting → closed"],
+  mission: ["Daily Mission", "Today: 3 call-backs (10 min)", "Practice: say the \"too expensive\" answer out loud", "Morning focus session: 2 min"],
+  streak: ["Streak & weekly report", "Streak counts logged calls", "Weekly growth report: Sun 7 PM", "Market Price Guess: 60 sec"],
+  scripts: ["Scripts", "Silent buyer (WhatsApp)", "\"Too expensive\" (call)", "\"Let me think\" (call)", "Cold call opener"],
+  market: ["Market", "DealRadar: DLD sales with filters and alerts", "Market Pulse: today's headline", "Pitch Client: send a sale in one tap"],
+  courses: ["Courses", "Cold Calling Mastery: 17 lessons", "Million Dirham course: 14 days", "Video, PDF guide, workbook, audio"],
+  ebooks: ["E-books", "Beginner Roadmap", "High-Ticket Sales Blueprint", "War Time", "Follow-up Fortune"],
+  labs: ["Live Labs", "This week: {lab_title}", "Replays", "Free masterclass"],
+  deal: ["Deal Room", "Offers and counter-offer scripts", "Negotiation notes", "Closing checklist: 6 items"],
+  ai: ["Reven AI", "Paste a client message, get a reply in your voice", "Daily limit: {tokens}"],
+  brand: ["Personal Branding", "Connect Instagram", "Drafts to approve", "Schedule and reach"],
+  refer: ["Refer & team", "Your win card: share after a closed deal", "Friend gets one lead coached free; you both get {reward}", "Team trial for your brokerage"],
+  profile: ["Profile & settings", "Quarter goal: {goal}", "Plan: Consultant / Rainmaker / Titan", "Notification settings: quiet hours 9 PM–8 AM, time zone, Ramadan timing, Friday off", "Payments and support chat"],
+};
+const TABNAME = { coach: "Coach", crm: "CRM", olc: "One-Lead", mission: "Mission", streak: "Streak", scripts: "Scripts", market: "Market", courses: "Courses", ebooks: "E-books", labs: "Labs", deal: "Deal Room", ai: "Reven AI", brand: "Branding", refer: "Refer", profile: "Profile" };
+const SIG = "\n\nYour coach, RealtorOne";
+
+function payStatus(pay, rel, inactive) {
+  if (rel < 0) return "Not paid";
+  const paidish = (s) => (inactive >= 3 && s === "Paid active" ? "Paid but inactive" : s);
+  switch (pay) {
+    case "Not paid (free)": return "Not paid";
+    case "Trial, doesn't pay": case "Trial, then pays":
+      if (rel < 4) return "Trial active"; if (rel === 4) return "Trial ends in 3 days"; if (rel < 6) return "Trial active";
+      if (rel === 6) return "Trial ends tomorrow"; if (rel === 7) return pay === "Trial, then pays" ? "Paid active" : "Trial ends today";
+      return pay === "Trial, then pays" ? paidish("Paid active") : "Trial expired";
+    case "Paid, then inactive": return paidish("Paid active");
+    case "Paid, payment fails": if (rel < 10) return paidish("Paid active"); if (rel < 15) return "Payment failed"; return "Expired";
+    case "Paid, then cancels": if (rel < 12) return paidish("Paid active"); if (rel < 19) return "Cancelled (access till end date)"; return "Expired";
+    case "Paid, renews": if (rel < 30) return paidish("Paid active"); return paidish("Renewed");
+  }
+  return "Not paid";
+}
+
+function simulate(days, beh, opt) {
+  const msgs = [];
+  let activated = false, firstOpen = 0, inactive = 0, streak = 0, activeDays = 0, angle = 0, valueSent = 0, offersSent = 0, lastOffer = -99, obj = 0, val = 0, lastPromo = "", leadAdded = false, unopenedLadder = 0;
+  const tried = new Set(), ignored = {};
+  let acts = new Set(), chans = new Set(), sent = 0, holiday = false, closed = false, courseUses = 0, refDay = -1, status = "Not paid";
+  const add = (day, time0, ch, id, title, body, why, kind) => {
+    const act = ACT[id] || (id.startsWith("PAY") || id.startsWith("IMP") ? "money" : id);
+    let time = time0;
+    if (opt.ramadan && ch !== "In-app" && !time0.startsWith("On")) time = time0.endsWith("AM") ? "10:30 AM" : "8:30 PM (after Iftar)";
+    const cap = Math.max(1, (opt.ramadan ? 3 : opt.cap) - (holiday ? 2 : 0));
+    const live = kind === "Milestone" && ch === "In-app";
+    let sup = "";
+    if (acts.has(act)) sup = `Suppressed (duplicate): this activity (${act}) already reached the realtor today.`;
+    else if (chans.has(ch) && !live) sup = `Suppressed (duplicate): ${ch} already used today for a different job. One role per channel per day.`;
+    else if (sent >= cap && !live) sup = `Suppressed (daily cap): ${cap} messages already sent today${holiday ? " (holiday: lighter cap)" : opt.ramadan ? " (Ramadan cap)" : ""}.`;
+    else if (holiday && kind === "Offer") sup = "Suppressed: no offers on public holidays.";
+    if (!sup) { acts.add(act); chans.add(ch); sent++; }
+    msgs.push({ day, time, ch, id, title, body, why, kind, sup: sup || undefined });
+  };
+  for (let d = 1; d <= days; d++) {
+    const b = beh(d);
+    holiday = !!b.holiday; acts = new Set(); chans = new Set(); sent = 0;
+    const rel = activated ? d - firstOpen : -1;
+    status = payStatus(opt.pay, rel, inactive);
+    // priority 1: money (one money message a day max)
+    if (activated) {
+      const P = opt.pay, tr = P.startsWith("Trial");
+      if (tr && rel === 4) add(d, "10:00 AM", "Push", "PAY-T3", "3 days left in your trial", "Your leads and morning plans are set up. Keep going: one call today.", "Trial ends in 3 days: calm reminder, value first.", "Money");
+      if (tr && rel === 6) add(d, "10:00 AM", "Email", "PAY-01", "Trial ends tomorrow", "Hi Guru,\n\nYour trial ends tomorrow. Your tracked leads and morning plans stay if you continue." + SIG, "Trial D-1.", "Money");
+      if (P === "Trial, doesn't pay" && rel === 7) add(d, "10:00 AM", "Push", "PAY-02", "Last day of your trial", "Keep your coach, Deal Room and leads. One deal pays for the year.", "Trial D0.", "Money");
+      if (P === "Trial, doesn't pay" && rel === 8) add(d, "10:00 AM", "Email", "PAY-03", "Guru, your leads are still here", "Hi Guru,\n\nYour trial has ended, but nothing is lost. Khalid and your notes are saved. Pick up where you left off: {link_url}" + SIG, "Trial expired, not paid (D+1).", "Money");
+      if (P === "Trial, doesn't pay" && rel === 14) add(d, "11:00 AM", "Email", "WB-01", "{stat_deals} deals closed by RealtorOne agents this month", "Hi Guru,\n\nAgents like you, starting with one lead. Come back free for 7 days: {link_url}" + SIG, "Trial expired 7 days ago: win-back offer.", "Money");
+      if ((P === "Trial, then pays" && rel === 7) || (!tr && P !== "Not paid (free)" && rel === 0)) add(d, "On pay", "In-app", "PAY-06", "All your leads are unlocked", "Import your CRM list. Tomorrow's plan covers all of them.", "Paid: welcome to the full plan.", "Milestone");
+      if ((P === "Trial, then pays" && rel === 8) || (!tr && P !== "Not paid (free)" && rel === 1)) add(d, "10:00 AM", "Email", "IMP-01", "Bring your leads from your old CRM", "Hi Guru,\n\nUpload one Excel and tomorrow's plan covers every lead, not just Khalid." + SIG, "Paid +1 day: import so the plan covers real leads.", "Money");
+      if (status === "Paid but inactive" && inactive === 4) add(d, "10:00 AM", "Push", "PAY-08", "Your plan is active. Khalid is waiting", "One call today makes this week count. Your line is ready.", "Paid but inactive 4 days: their own lead, no guilt.", "Money");
+      if (P === "Paid, payment fails" && rel === 10) add(d, "10:00 AM", "Email", "PAY-05", "Action needed on your payment", "Hi Guru,\n\nYour last payment didn't go through. Update your card so your morning plans don't stop: {link_url}" + SIG, "Payment failed.", "Money");
+      if (P === "Paid, payment fails" && rel === 12) add(d, "10:00 AM", "Push", "PAY-05", "Your payment still needs a fix", "Update your card in 1 minute. Your plans continue.", "Payment failed +2 days: retry on another channel.", "Money");
+      if (P === "Paid, then cancels" && rel === 12) add(d, "On cancel", "Email", "PAY-09", "Your plan is cancelled", "Hi Guru,\n\nDone. You keep full access until {end_date}. If something didn't work for you, just reply and tell us." + SIG, "Cancelled: confirm, no pressure.", "Money");
+      if ((P === "Paid, payment fails" && rel === 15) || (P === "Paid, then cancels" && rel === 19)) add(d, "10:00 AM", "Email", "PAY-07", "Your access has ended", "Hi Guru,\n\nYour history is saved. Restart anytime: {link_url}" + SIG, "Subscription expired.", "Money");
+      if (P === "Paid, renews" && rel === 27) add(d, "10:00 AM", "Email", "PAY-11", "Your plan renews in 3 days", "Hi Guru,\n\nNo action needed. Here's your month: {calls} calls, {deals} deals." + SIG, "Renewal in 3 days: show value, no surprise charge.", "Money");
+      if (P === "Paid, renews" && rel === 30) add(d, "On renew", "In-app", "PAY-10", "Renewed. Thank you, Guru", "Next month's plans are ready. Set this month's target in 30 seconds.", "Renewed.", "Milestone");
+    }
+    // priority 2: referral & team
+    if (d === refDay) add(d, "11:00 AM", "Email", "REF-01", "Share your win card?", "Hi Guru,\n\nYou closed with Khalid. A friend who is where you were a few months ago gets one lead coached free from your card. You both get {reward}." + SIG, "Referral: day after a closed deal, when the realtor feels good.", "Referral");
+    if (activated && activeDays === 14 && b.opened) add(d, "7:00 PM", "Email", "REF-03", "Want this for your whole team?", "Hi Guru,\n\nTwo weeks of daily calls. If your manager or team would use the same morning plan, send them the team trial in one tap." + SIG, "14 active days: brokerage/team invite.", "Referral");
+    if (opt.team && activated && d % 7 === 0) add(d, "7:00 PM", "Email", "TEAM-01", "Your team this week", "Hi Guru,\n\nCalls logged by your team: {team_calls}. Leads stuck at Follow-up: {team_stuck}. One agent to check in with: {agent_name}.\n\nRealtorOne", "Brokerage owner: weekly team digest instead of personal nurture.", "Team");
+    if (!activated) {
+      if (!b.opened) {
+        unopenedLadder++;
+        const n = unopenedLadder;
+        if (n === 1) add(d, "11:00 AM", "Push", "ACC-01", "That call you're dreading?", "Sign up in 30 sec and get the exact first line to say tomorrow morning.", "App never opened: re-entry nudge, no welcome yet.", "Re-entry");
+        else if (n === 2) add(d, "10:00 AM", "Push", "ACC-02", "One lead. Zero cost.", "Track one lead free from first call to closing. Keep your CRM.", "Push 1 unopened: new angle (quick win), new time.", "Re-entry");
+        else if (n === 4) add(d, "6:00 PM", "Email", "ACC-05", "Still chasing leads from memory?", "Hi Guru,\n\nMost agents lose a deal not on the first call but on the call-back they forgot. Add one lead in RealtorOne and we'll remind you at the right time, with the right words.\n\nIt takes 10 seconds: one name." + SIG, "2 pushes unopened: switch channel to email.", "Re-entry");
+        else if (n === 7) add(d, "10:00 AM", "WhatsApp", "SLP-14", "Rough week?", "It happens to everyone. Reply YES and I'll send you a 5-minute plan for one lead.", "Email unopened: last try on WhatsApp (opt-in only).", "Re-entry");
+        else if (n > 7 && n % 7 === 0) add(d, "10:00 AM", "Email", "SLP-30", "Your account is saved, Guru", "Hi Guru,\n\nWhenever you're ready, start with one call. Your coach will be there.\n\nRealtorOne", "Sunset rule: 7 unopened → once a week only.", "Re-entry");
+        continue;
+      }
+      activated = true; firstOpen = d;
+      status = payStatus(opt.pay, 0, 0);
+      add(d, "On open", "In-app", "ACC-03", "Welcome, Guru. Let's start with one lead.", "Add the client you keep putting off. Tomorrow 8 AM your coach tells you exactly what to say.", "First open: welcome only now, never before.", "Welcome");
+      add(d, "On open", "Email", "ACC-03", "Welcome, Guru. Let's start with one lead.", "Hi Guru,\n\nYou don't need another app that sends reminders. You need someone to tell you what to say when the client goes quiet.\n\nStart small: add one lead today. Tomorrow at 8 AM you'll get who to call first, three steps, and one thing not to say." + SIG, "Welcome email would repeat the in-app welcome.", "Welcome");
+      if (opt.pay !== "Not paid (free)" && !opt.pay.startsWith("Trial")) add(d, "On pay", "In-app", "PAY-06", "All your leads are unlocked", "Import your CRM list. Tomorrow's plan covers all of them.", "Paid on day one.", "Milestone");
+    } else {
+      if (inactive === 0 || inactive === 1) {
+        if (leadAdded) add(d, "8:00 AM", "Push", "MC-01", "Today: call Khalid first", COACH[b.stage === "None" ? "Follow-up" : b.stage] || COACH["Follow-up"], "Daily Morning Coach, only once a lead exists.", "Daily");
+        else add(d, "8:00 AM", "Push", "OLC-03", "Who's the client you keep delaying?", "Add their name. That's it. We do the rest at 8 AM.", "Active but no lead yet: ask for the one name instead of a plan.", "Daily");
+      }
+      if (inactive === 3) add(d, "10:00 AM", "Push", "SLP-03", "Khalid hasn't heard from you", "One message today keeps him warm. It's written.", "3 days inactive: their own lead, not a generic 'we miss you'.", "Slipping");
+      if (inactive === 7) { add(d, "10:00 AM", "Push", "SLP-07", "A week of silence, Guru", "Your leads go to the agent who calls back. 1 call today.", "7 days inactive.", "Slipping"); add(d, "6:00 PM", "Email", "SLP-07", "A week of silence, Guru", "Hi Guru,\n\nKhalid was at Follow-up when you last checked. A short call today is usually enough to restart." + SIG, "Email version of the same D7 re-entry.", "Slipping"); }
+      if (inactive === 14) add(d, "10:00 AM", "WhatsApp", "SLP-14", "Rough month?", "It happens to everyone. Restart with one lead. Reply YES and I'll send your plan.", "14 days inactive: WhatsApp.", "Slipping");
+      if (inactive === 30) add(d, "10:00 AM", "Email", "SLP-30", "Your history is saved", "Hi Guru,\n\nMonth-end coming? Start with one call. Everything is where you left it.\n\nRealtorOne", "30 days inactive: monthly only after this.", "Slipping");
+      if (b.opened && inactive >= 3) add(d, "On open", "In-app", "WB-02", "Welcome back, Guru", "Pick up where you left off: today's first call is Khalid.", "Returned after slipping.", "Welcome back");
+      if (inactive < 3) {
+        if (lastPromo && !tried.has(lastPromo)) ignored[lastPromo] = (ignored[lastPromo] || 0) + 1;
+        const pick = FEATS.filter((f) => !tried.has(f.key) && f.key !== lastPromo && (ignored[f.key] || 0) < 2)[0];
+        if (pick) {
+          const v = pick.promo[Math.min(1, ignored[pick.key] || 0)];
+          const ag = ANGLES[angle % ANGLES.length]; angle++;
+          const prev = FEATS.find((f) => f.key === lastPromo);
+          add(d, b.opened ? "On open" : "11:00 AM", b.opened ? "In-app" : "Push", "PROMO", v[0], v[1], lastPromo ? `${prev ? prev.name : lastPromo} not used yesterday, so today: different feature (${pick.name}), angle: ${ag}.` : `First untried feature: ${pick.name}, angle: ${ag}.`, "Feature nudge");
+          lastPromo = pick.key;
+        }
+      }
+      if (!b.opened && inactive < 2) add(d, "12:30 PM", "Push", "MC-02", "Your first call is still waiting", "Khalid is warmest before 2 PM. Your line is ready.", "Plan not opened by 12:30.", "Daily");
+    }
+    if (b.opened) {
+      if (b.used !== "none") tried.add(b.used);
+      if (b.used === "crm" || b.stage !== "None") { if (!leadAdded) add(d, "On add", "In-app", "OLC-05", "Got it. Khalid is tracked", "Tomorrow 8 AM: your opening line, 3 steps, and one thing not to say.", "First lead added.", "Milestone"); leadAdded = true; }
+      activeDays++; inactive = 0;
+      if (b.calls > 0) { streak++; if ([3, 7, 14, 30].includes(streak)) add(d, "On log", "In-app", "HAB-05", `${streak} days of calls in a row`, "Streak counts calls you logged, not app opens. Keep going.", "Streak milestone.", "Milestone"); }
+      else { if (streak >= 3) add(d, "7:00 PM", "Push", "HAB-03", `Protect your ${streak}-day streak`, "One call logged keeps it. Even a 2-minute one.", "Opened but no calls logged; streak at risk.", "Daily"); else add(d, "6:00 PM", "Push", "MC-03", "How did today's calls go?", "Tap the result. 5 seconds. Tomorrow's plan gets sharper.", "No calls logged by 6 PM.", "Daily"); streak = 0; }
+    } else if (activated) { inactive++; streak = 0; }
+    if (b.opened && b.used === "courses") { courseUses++; if (courseUses === 3) add(d, "On finish", "In-app", "LRN-03", "Course done. Try one line on Khalid today", "You finished the lesson set. Use one line from it on your next call and log how it went.", "Completed a course: turn learning into a call.", "Milestone"); }
+    if (b.opened && b.stage === "Closure" && b.calls > 0 && !closed) { closed = true; refDay = d + 1; add(d, "On close", "In-app", "CRM-06", "Closed. Well done, Guru", "That's a deal done. Take a minute, then tomorrow's plan picks the next lead.", "Closed a deal: celebrate first, no ask today.", "Milestone"); }
+    if (activated && inactive < 3 && d > firstOpen) {
+      const o = OBJ[obj % OBJ.length]; obj++;
+      add(d, "12:00 PM", "WhatsApp", "WA-OBJ", `Today's objection: ${o[0]}`, `How to handle it today: ${o[1]}`, "WhatsApp role: one objection + the fix to use today.", "Value");
+      const canOffer = /Not paid|Trial|expired|Expired/.test(status);
+      const offerOk = canOffer && activeDays >= 3 && valueSent >= 3 && valueSent >= (offersSent + 1) * 4 - 1 && d - lastOffer >= 3;
+      if (offerOk && offersSent < OFFERS.length) { const of = OFFERS[offersSent]; add(d, "7:00 PM", "Email", "OFFER", of[0], `Hi Guru,\n\n${of[1]}` + SIG, `Offer allowed: ${activeDays} active days, ${valueSent} value messages first (4:1 rule), status: ${status}.`, "Offer"); offersSent++; lastOffer = d; }
+      else if ((d - firstOpen) % 2 === 1) { const v = VALUE[val % VALUE.length]; val++; valueSent++; add(d, "6:30 PM", "Email", "VAL", v[1], `Hi Guru,\n\n${v[2]}` + SIG, `Value (${v[0]}) after activation, no pitch.`, "Value"); }
+      else valueSent++;
+    }
+  }
+  return { msgs, state: { "Payment status": status, "Opened ever": activated ? `Yes, day ${firstOpen}` : "No", "Lead added": leadAdded ? "Yes" : "No", "Call streak": `${streak} days`, "Days inactive": `${inactive}`, "Active days": `${activeDays}`, "Features tried": `${tried.size} of ${FEATS.length}`, "Value / offers sent": `${valueSent} / ${offersSent}`, "Deal closed": closed ? "Yes" : "No", "Courses opened": `${courseUses}`, "Suppressed so far": `${msgs.filter((m) => m.sup).length}` } };
+}
+
+/* ---------- state & URL hash ---------- */
+const DEF = { v: "sim", persona: "Ideal user", day: 1, over: {}, tab: "coach", log: "All", ramadan: false, team: false, cap: 4, tz: "Dubai (GST)", pay: "Not paid (free)" };
+let S = { ...DEF };
+function enc(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/, ""); }
+function dec(s) { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } }
+function loadHash() { const h = location.hash.replace(/^#/, ""); const o = h ? dec(h) : null; S = { ...DEF, ...(o || {}) }; if (!PERSONAS[S.persona]) S.persona = DEF.persona; if (!PAYS.includes(S.pay)) S.pay = DEF.pay; }
+function save() { const h = "#" + enc(S); if (location.hash !== h) history.replaceState(null, "", h); }
+const behOf = (d) => S.over[`${S.persona}|${d}`] || PERSONAS[S.persona](d);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const sel = (name, val, opts) => `<label>${esc(name.label)}<select data-k="${name.k}">${opts.map((o) => { const v = typeof o === "string" ? o : o[0]; const l = typeof o === "string" ? o : o[1]; return `<option value="${esc(v)}"${String(v) === String(val) ? " selected" : ""}>${esc(l)}</option>`; }).join("")}</select></label>`;
+const tog = (label, k, val, dis) => `<label class="tog"><input type="checkbox" data-k="${k}"${val ? " checked" : ""}${dis ? " disabled" : ""}> ${esc(label)}</label>`;
+
+/* ---------- tester checklist ---------- */
+const sc = (o) => "#" + enc({ ...DEF, ...o });
+const ROLES = [
+  ["1. New & inactive users", [
+    ["Never opens: day 1 and 2 are push only, day 4 email, day 7 WhatsApp, no welcome ever", { persona: "Never opens the app", day: 7 }],
+    ["Never opens: after day 7 only one message a week (day 14, 21)", { persona: "Never opens the app", day: 21 }],
+    ["Late starter: welcome appears only on day 5 (first open), welcome email shows as suppressed", { persona: "Late starter (opens day 5)", day: 5 }],
+    ["Slipping user: day 3, 7, 14 re-entry messages use the realtor's own lead (Khalid)", { persona: "Active, then slips (day 8)", day: 21 }],
+    ["Returns on day 23: 'Welcome back' in-app, normal daily flow resumes", { persona: "Active, then slips (day 8)", day: 23 }],
+  ]],
+  ["2. Payment states", [
+    ["Trial: '3 days left' (day 5), 'ends tomorrow' (day 7), 'last day' (day 8), 'leads still here' (day 9)", { persona: "Ideal user", pay: "Trial, doesn't pay", day: 9 }],
+    ["Trial then pays: 'All your leads are unlocked' on day 8, import email day 9, offers stop", { persona: "Ideal user", pay: "Trial, then pays", day: 12 }],
+    ["Paid but inactive: calm 'Your plan is active' nudge, no offers", { persona: "Active, then slips (day 8)", pay: "Paid, then inactive", day: 12 }],
+    ["Payment failed (day 11) → retry push (day 13) → expired (day 16)", { persona: "Ideal user", pay: "Paid, payment fails", day: 16 }],
+    ["Cancelled (day 13) keeps access → expired (day 20); renewal reminder day 28, renewed day 31", { persona: "Ideal user", pay: "Paid, renews", day: 31 }],
+  ]],
+  ["3. Feature usage", [
+    ["Opens but ignores features: each day promotes a different feature with a new angle", { persona: "Opens, ignores features", day: 8 }],
+    ["A feature ignored twice is dropped from promotion", { persona: "Opens, ignores features", day: 14 }],
+    ["Ideal user: features already used are never promoted again", { persona: "Ideal user", day: 10 }],
+    ["Change 'Feature used today' and confirm tomorrow's promo changes", { persona: "Opens, ignores features", day: 3 }],
+    ["No lead yet: 8 AM push asks for one name instead of a plan", { persona: "Opens, ignores features", day: 2 }],
+  ]],
+  ["4. Channels & duplicates", [
+    ["Each channel carries one job a day (check 'Why' list: duplicates are marked Suppressed)", { persona: "Ideal user", day: 6 }],
+    ["12:30 plan reminder never sends when the 8 AM plan already went out", { persona: "Active, then slips (day 8)", day: 8 }],
+    ["Daily cap 3: extra messages show 'Suppressed (daily cap)'", { persona: "Ideal user", day: 8, cap: 3 }],
+    ["WhatsApp always holds one objection + how to handle it today", { persona: "Ideal user", day: 4 }],
+    ["Offers only after 3 active days and 4 value messages, never two days in a row", { persona: "Ideal user", day: 14 }],
+  ]],
+  ["5. Milestones & special situations", [
+    ["Deal closed (day 21): celebrate in-app, referral email next day", { persona: "Ideal user", day: 22 }],
+    ["Streak milestones at 3, 7, 14 days of logged calls", { persona: "Ideal user", day: 14 }],
+    ["Course completed after 3 course sessions; team invite at 14 active days", { persona: "Ideal user", day: 15 }],
+    ["Ramadan mode: sends move to 10:30 AM / after Iftar, cap 3", { persona: "Ideal user", day: 6, ramadan: true }],
+    ["Public holiday + brokerage owner: lighter cap, no offers, Sunday team digest", { persona: "Ideal user", day: 7, team: true }],
+  ]],
+];
+const CK = "r1sim-checklist";
+const getCk = () => { try { return JSON.parse(localStorage.getItem(CK) || "{}"); } catch (e) { return {}; } };
+
+/* ---------- render ---------- */
+function render() {
+  save();
+  const app = document.getElementById("app");
+  const nav = `<nav class="views"><a href="#" data-view="sim" class="${S.v === "sim" ? "on" : ""}">Simulator</a><a href="#" data-view="check" class="${S.v === "check" ? "on" : ""}">Tester checklist</a><button data-act="share">Copy scenario link</button><span id="copied"></span></nav>`;
+  if (S.v === "check") {
+    const ck = getCk(); let done = 0, all = 0;
+    const body = ROLES.map(([role, items], r) => `<section class="card"><h2>${esc(role)}</h2>${items.map(([txt, o], i) => { const id = `${r}-${i}`; all++; if (ck[id]) done++; return `<div class="ck"><label><input type="checkbox" data-ck="${id}"${ck[id] ? " checked" : ""}> ${esc(txt)}</label> <a href="${sc(o)}" data-load="1">Open scenario</a></div>`; }).join("")}</section>`).join("");
+    app.innerHTML = nav + `<p class="muted">Ticks are saved in this browser only. ${done} of ${all} checked. <button data-act="clearck">Clear ticks</button></p>` + body;
+    return;
+  }
+  const sim = simulate(S.day, behOf, { ramadan: S.ramadan, cap: Number(S.cap), team: S.team, pay: S.pay });
+  const all = sim.msgs.filter((m) => m.day === S.day), today = all.filter((m) => !m.sup);
+  const b = behOf(S.day);
+  const of = (c) => today.filter((m) => m.ch === c);
+  const feats = [["none", "No feature used"], ...FEATS.map((f) => [f.key, f.name])];
+  const card = (m) => `<div class="msg"><div class="meta"><span>RealtorOne</span><span>${esc(m.time)}</span></div><b>${esc(m.title)}</b><div>${esc(m.body)}</div></div>`;
+  const ia = of("In-app");
+  const logRows = sim.msgs.filter((m) => S.log === "Suppressed" ? m.sup : !m.sup && (S.log === "All" || m.ch === S.log)).slice().reverse();
+  app.innerHTML = nav + `
+  <section class="card"><h2>Day simulator</h2>
+    <div class="row">${sel({ label: "User type", k: "persona" }, S.persona, Object.keys(PERSONAS))}${sel({ label: "Payment path", k: "pay" }, S.pay, PAYS)}
+    <button data-act="prev">◀ Prev day</button><span class="day">Day ${S.day}</span><button class="pri" data-act="next">Next day ▶</button><button data-act="plus7">+7 days</button><button data-act="reset">Reset changes</button></div>
+    <div class="row">${tog("Opened the app today", "opened", b.opened)}${sel({ label: "Feature used today", k: "used" }, b.used, feats)}${sel({ label: "Calls logged", k: "calls" }, b.calls, ["0", "1", "2", "3", "5"])}${sel({ label: "Lead stage (Khalid)", k: "stage" }, b.stage, STAGES)}</div>
+    <div class="row">${tog("Public holiday today", "holiday", b.holiday)}${tog("Ramadan mode", "ramadan", S.ramadan)}${tog("Brokerage owner (team)", "team", S.team)}${sel({ label: "Daily cap", k: "cap" }, S.cap, ["3", "4", "5"])}${sel({ label: "Realtor's time zone", k: "tz" }, S.tz, ["Dubai (GST)", "India (IST)", "London (GMT)"])}</div>
+    <p class="muted">Payment status today: <b>${esc(sim.state["Payment status"])}</b>. Changes apply to the current day and ripple forward. Khalid is sample data; figures in braces are placeholders. Times are the realtor's local time (${esc(S.tz)}); quiet hours 9 PM–8 AM; Ramadan moves sends to 10:30 AM or after Iftar.</p>
+  </section>
+  <h2 class="h">Day ${S.day}: what the realtor receives</h2>
+  <div class="grid">
+    <div><div class="lbl">App (tap a tab)</div><div class="phone"><div class="meta"><span>RealtorOne</span><span>Day ${S.day}</span></div>
+      ${!b.opened ? `<div class="msg"><div class="muted">App not opened today</div>In-app messages are held until the next open.</div>` : ia.map((m) => `<div class="msg accent"><b>${esc(m.title)}</b><div>${esc(m.body)}</div></div>`).join("")}
+      <div class="screen">${(SCREENS[S.tab] || []).map((l, i) => i ? `<div class="li">${esc(l)}</div>` : `<b>${esc(l)}</b>`).join("")}</div>
+      <div class="tabs">${Object.keys(TABNAME).map((k) => `<button data-tab="${k}" class="${k === S.tab ? "on" : ""}">${TABNAME[k]}</button>`).join("")}</div></div></div>
+    <div><div class="lbl">Lock screen (push)</div><div class="lock">${of("Push").length ? of("Push").map(card).join("") : `<div class="muted">No push today.</div>`}</div></div>
+    <div><div class="lbl">Email</div>${of("Email").length ? of("Email").map((m) => `<div class="msg"><div class="muted">From: RealtorOne Coach · ${esc(m.time)}</div><b>Subject: ${esc(m.title)}</b><div class="pre">${esc(m.body)}</div></div>`).join("") : `<div class="msg muted">No email today.</div>`}</div>
+    <div><div class="lbl">WhatsApp message</div><div class="wa">${of("WhatsApp").length ? of("WhatsApp").map((m) => `<div class="bubble"><b>${esc(m.title)}</b><div>${esc(m.body)}</div><div class="t">${esc(m.time)}</div></div>`).join("") : `<div class="muted">No WhatsApp today.</div>`}</div></div>
+  </div>
+  <section class="card"><h2>Why each message went out (or was held back) today</h2>${all.length ? all.map((m) => `<div class="why ${m.sup ? "sup" : ""}"><span class="pill">${m.sup ? "Suppressed" : esc(m.kind)}</span> <b>${esc(m.time)} · ${esc(m.ch)}: ${esc(m.title)}</b> <span class="muted">${esc(m.id)}</span><div class="muted">${esc(m.sup ? m.sup + " Planned reason: " + m.why : m.why)}</div></div>`).join("") : `<div class="muted">Nothing scheduled today.</div>`}</section>
+  <section class="card"><h2>User state after today</h2><table>${Object.entries(sim.state).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("")}</table></section>
+  <section class="card"><h2>Message log so far</h2><div class="row seg">${["All", "In-app", "Push", "Email", "WhatsApp", "Suppressed"].map((c) => `<button data-log="${c}" class="${c === S.log ? "on" : ""}">${c}</button>`).join("")}</div>
+    <div class="scroll"><table><tr><th>Day</th><th>Time</th><th>Channel</th><th>Type</th><th>Message</th><th>ID</th></tr>${logRows.map((m) => `<tr><td>${m.day}</td><td>${esc(m.time)}</td><td>${m.ch}</td><td>${esc(m.kind)}</td><td>${esc(m.title)}</td><td>${esc(m.id)}</td></tr>`).join("")}</table></div></section>
+  <section class="card"><h2>Rules this simulator follows</h2><ul>
+    <li><b>One message per activity:</b> each activity reaches the realtor once a day on one channel; money messages max one a day.</li>
+    <li><b>One role per channel, daily cap:</b> default 4 (3 in Ramadan, 2 fewer on holidays). In-app confirmations while using the app always show.</li>
+    <li><b>Priority:</b> money, then referral/team, then daily coach, then feature nudges, then value.</li>
+    <li><b>Never opened:</b> re-entry only (push day 1–2, email day 4, WhatsApp day 7, then weekly). No welcome before the first open.</li>
+    <li><b>Ignored feature:</b> different feature and angle next day; dropped after 2 ignores.</li>
+    <li><b>Value before offers:</b> value starts after first open; offers need 3 active days, the 4:1 rule, 3-day gap, unpaid/trial/expired status, never on holidays.</li>
+    <li><b>WhatsApp:</b> one objection + how to handle it today. <b>Streak</b> counts logged calls, not opens.</li>
+    <li><b>Payments:</b> not paid, trial active, trial ends in 3 / 1 / 0 days, trial expired, paid active, paid but inactive, payment failed, cancelled, expired, renewed.</li>
+  </ul><p class="muted">Simulation of the planned logic from the RealtorOne Notification Hub, not the live panel.</p></section>`;
+}
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-act],[data-tab],[data-log],[data-view],[data-load]");
+  if (!t) return;
+  if (t.dataset.load) { e.preventDefault(); location.hash = t.getAttribute("href"); return; }
+  e.preventDefault();
+  const a = t.dataset.act;
+  if (t.dataset.view) S.v = t.dataset.view;
+  else if (t.dataset.tab) S.tab = t.dataset.tab;
+  else if (t.dataset.log) S.log = t.dataset.log;
+  else if (a === "prev") S.day = Math.max(1, S.day - 1);
+  else if (a === "next") S.day++;
+  else if (a === "plus7") S.day += 7;
+  else if (a === "reset") S.over = {};
+  else if (a === "clearck") localStorage.removeItem(CK);
+  else if (a === "share") { const u = location.href; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { document.getElementById("copied").textContent = "Link copied"; }, () => prompt("Copy this link", u)); return; }
+  render();
+});
+document.addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.dataset.ck) { const c = getCk(); c[t.dataset.ck] = t.checked; localStorage.setItem(CK, JSON.stringify(c)); render(); return; }
+  const k = t.dataset.k; if (!k) return;
+  const v = t.type === "checkbox" ? t.checked : t.value;
+  if (k === "persona") { S.persona = v; S.day = 1; }
+  else if (k === "pay") S.pay = v;
+  else if (["ramadan", "team"].includes(k)) S[k] = v;
+  else if (k === "cap") S.cap = Number(v);
+  else if (k === "tz") S.tz = v;
+  else {
+    const b = behOf(S.day); const p = { ...b };
+    if (k === "opened") { p.opened = v; if (!v) { p.used = "none"; p.calls = 0; } }
+    else if (k === "calls") p.calls = Number(v); else p[k] = v;
+    S.over = { ...S.over, [`${S.persona}|${S.day}`]: p };
+  }
+  render();
+});
+window.addEventListener("hashchange", () => { loadHash(); render(); });
+loadHash(); render();
+
+</script></body></html>
